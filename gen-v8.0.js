@@ -1,0 +1,2187 @@
+/ ============================================================ 
+// COSTANTI DI CONFIGURAZIONE 
+// ============================================================ 
+var LIVELLO_INIZIALE = 1; 
+var EXP_INIZIALE = 0; 
+var EXP_MASSIMA = 100; 
+var JENNY_INIZIALI = 10000; 
+var HC_INIZIALI = 0; 
+var NEN_INIZIALE = 0; 
+var TENACIA_INIZIALE = 10; 
+ 
+var SBLOCCO_COMPETENZE = [10, 20, 30, 40, 50]; 
+ 
+var STAT_BASE = { 
+ forza: 5, resistenza: 5, velocita: 5, riflessi: 5, destrezza: 5, 
+ mira: 5, intelligenza: 5, carisma: 5, istinto: 5, fortuna: 5, 
+ vita: 300, aura: 500 
+}; 
+ 
+var BONUS_LUOGO = { 
+ 'Neo Green Life':            { resistenza: 5, velocita: 5, riflessi: 5 }, 
+ 'Repubblica di Padokia':     { riflessi: 5, destrezza: 5, intelligenza: 5 }, 
+ 'York Shin':                 { mira: 5, intelligenza: 5, carisma: 5 }, 
+ 'Città delle Stelle Cadenti':{ forza: 5, resistenza: 5, destrezza: 5 }, 
+ 'Zapan':                     { forza: 5, intelligenza: 5, carisma: 5 } 
+}; 
+ 
+// Luoghi esclusivi Bestie Demoniache (nessun bonus stat) 
+var LUOGHI_BESTIA = { 
+ 'Kiriko':              ['Insediamento Melioras'], 
+ 'Scimmia Antropomorfa':['Villaggio di Trakey'], 
+ 'Guardiano':           ['Villaggio di Blackbird'], 
+ 'Kitsune':             ['Villaggio delle Nuvole', 'Villaggio dei Fiori'], 
+ 'Dai Tengu':           ['Monte Hiei', 'Monte Kurama'], 
+ 'Karasu Tengu':        ['Monte Hiei', 'Monte Kurama'], 
+ 'Were-pire':           ['Città Eterna'], 
+ 'Formichimera Umana':  Object.keys(BONUS_LUOGO) // tutti i luoghi umani, senza bonus 
+}; 
+ 
+// Dati per ogni specie di Bestia Demoniaca 
+var DATI_SPECIE = { 
+ 'Kiriko':              { rank: 'E', conservazione: 'Vulnerabile (VU)',                    fedina: 'Incensurato' }, 
+ 'Scimmia Antropomorfa':{ rank: 'A', conservazione: 'Rischio Minimo (LC)',                 fedina: 'Ricercato' }, 
+ 'Guardiano':           { rank: 'C', conservazione: 'Critico (CR)',                        fedina: 'Ricercato' }, 
+ 'Kitsune':             { rank: 'C', conservazione: 'Rischio Minimo (LC)',                 fedina: 'Ricercato' }, 
+ 'Dai Tengu':           { rank: 'D', conservazione: 'Vulnerabile (VU)',                    fedina: 'Incensurato' }, 
+ 'Karasu Tengu':        { rank: 'D', conservazione: 'Vulnerabile (VU)',                    fedina: 'Incensurato' }, 
+ 'Were-pire':           { rank: 'D', conservazione: 'Rischio Minimo (LC)',                 fedina: 'Incensurato' }, 
+ 'Formichimera Umana':  { rank: 'B', conservazione: 'Probabilmente Estinto in Natura (PEW)', fedina: 'Ricercato' } 
+}; 
+ 
+var SPECIE_BESTIA = Object.keys(DATI_SPECIE); 
+ 
+// Valore taglia minimo per classificazione 
+var VALORE_TAGLIA_BASE = { 
+ 'E': 1000, 'D': 50000, 'C': 100000, 'B': 250000, 
+ 'A': 750000, 'S': 1500000, 'SS': 3000000, 'SSS': 5000000 
+}; 
+var CLASSIFICAZIONI_TAGLIA = ['E','D','C','B','A','S','SS','SSS']; 
+ 
+var BONUS_CLASSE = { 
+ 'Hacker': { intelligenza: 10 } 
+}; 
+ 
+var TIPI_HATSU = [ 
+ 'Irrobustimento (&#24375;&#21270;)', 
+ 'Emissione (&#25918;&#20986;)', 
+ 'Trasformazione (&#22793;&#21270;)', 
+ 'Manipolazione (&#25805;&#20316;)', 
+ 'Concretizzazione (&#20855;&#29616;&#21270;)', 
+ 'Specializzazione (&#29305;&#36074;)' 
+]; 
+ 
+// 0 = visibile, 1 = disabilitata (posti esauriti) 
+var CLASSI_CONFIG = { 
+ 'Aspiring Hunter':            0, 
+ 'Wild Soul':                  0, 
+ 'Silent Killer':              0, 
+ 'Martial Artist':             0, 
+ 'Descendant of Kuruta Clan':  0, 
+ 'Illusionist':                0, 
+ 'Ramingo':                    0, 
+ 'Hacker':                     0, 
+ 'Doctor':                     0, 
+ 'Outlaw':                     0, 
+ 'Undertaker':                 0, 
+ 'Domaserpi':                  0, 
+ 'Ninja':                      0, 
+ 'Influencer':                 0, 
+ "Hawk's eye":                 0, 
+ 'Apprendista Alchimista':     0 
+}; 
+ 
+// Classi attive (0 = disponibile) — usato per nuove schede 
+var CLASSI = Object.keys(CLASSI_CONFIG).filter(function(c){ return CLASSI_CONFIG[c] === 0; }); 
+// Tutte le classi — usato in modifica per non perdere classi disabilitate 
+var CLASSI_TUTTE = Object.keys(CLASSI_CONFIG); 
+ 
+var LUOGHI_UMANI = Object.keys(BONUS_LUOGO); 
+// Tutti i luoghi visibili nel menù (umani + bestia, deduplicati) 
+var LUOGHI_TUTTI = (function(){ 
+ var tutti = LUOGHI_UMANI.slice(); 
+ var visti = {}; 
+ for (var i = 0; i < tutti.length; i++) visti[tutti[i]] = true; 
+ for (var sp in LUOGHI_BESTIA) { 
+  var ll = LUOGHI_BESTIA[sp]; 
+  for (var j = 0; j < ll.length; j++) { 
+   if (!visti[ll[j]]) { tutti.push(ll[j]); visti[ll[j]] = true; } 
+  } 
+ } 
+ return tutti; 
+})(); 
+ 
+var STATUS = ['Nessuno', 'Criminale', 'Hunter', 'Lottatore/trice Celeste', 'Assassino/a', 'Zampa']; 
+ 
+var SEGNI_ZODIACALI = [ 
+ 'Ariete', 'Toro', 'Gemelli', 'Cancro', 'Leone', 'Vergine', 
+ 'Bilancia', 'Scorpione', 'Sagittario', 'Capricorno', 'Acquario', 'Pesci' 
+]; 
+ 
+var SEGNI_CINESI = [ 
+ 'Topo', 'Bue', 'Tigre', 'Coniglio', 'Drago', 'Serpente', 
+ 'Cavallo', 'Capra', 'Scimmia', 'Gallo', 'Cane', 'Maiale' 
+]; 
+ 
+var MBTI_TIPI = [ 
+ 'INTJ', 'INTP', 'ENTJ', 'ENTP', 
+ 'INFJ', 'INFP', 'ENFJ', 'ENFP', 
+ 'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 
+ 'ISTP', 'ISFP', 'ESTP', 'ESFP' 
+]; 
+ 
+var ALLINEAMENTI = [ 
+ 'Legale Buono', 'Neutrale Buono', 'Caotico Buono', 
+ 'Legale Neutrale', 'Neutrale Puro', 'Caotico Neutrale', 
+ 'Legale Malvagio', 'Neutrale Malvagio', 'Caotico Malvagio' 
+]; 
+ 
+var PALETTE = [ 
+ { id:'scheda-darknight', nome:'Dark Night', bordo:'#4A5F7F', sfondo:'#252525', titolo1:'#2D3E5F', titolo2:'#7090C0', sfondo2:'#1E2A3F', testo:'#A6A1C2', vitale:'#FFFFFF' }, 
+ { id:'scheda-cherry', nome:'Cherry', bordo:'#C07090', sfondo:'#FFF0F5', titolo1:'#E0B0C8', titolo2:'#7A2A45', sfondo2:'#F0D8E4', testo:'#4A1028', vitale:'#1A0010' }, 
+ { id:'scheda-lavender', nome:'Lavender', bordo:'#9080C0', sfondo:'#FAF8FF', titolo1:'#DCD0F0', titolo2:'#4A3880', sfondo2:'#F0ECF8', testo:'#281E50', vitale:'#100830' }, 
+ { id:'scheda-ice', nome:'Ice', bordo:'#6090B0', sfondo:'#F5F9FC', titolo1:'#C0D8EC', titolo2:'#2A5A7A', sfondo2:'#E0ECF5', testo:'#183A50', vitale:'#081828' }, 
+ { id:'scheda-garden', nome:'Garden', bordo:'#6A9070', sfondo:'#F2F8F2', titolo1:'#C8DCC8', titolo2:'#2A5030', sfondo2:'#E8F0E8', testo:'#183020', vitale:'#081408' }, 
+ { id:'scheda-autumn', nome:'Autumn', bordo:'#9A5030', sfondo:'#FDF5EC', titolo1:'#E8C8A0', titolo2:'#6A2808', sfondo2:'#F5E8D8', testo:'#3A1504', vitale:'#180800' }, 
+ { id:'scheda-coral', nome:'Coral', bordo:'#D08870', sfondo:'#FFF8F5', titolo1:'#F8D8C8', titolo2:'#C04828', sfondo2:'#FDF0EC', testo:'#187870', vitale:'#003830' }, 
+ { id:'scheda-paper', nome:'Paper', bordo:'#7080A0', sfondo:'#F8F4E8', titolo1:'#C8D0E0', titolo2:'#1A2848', sfondo2:'#E8E4D8', testo:'#0E1830', vitale:'#040810' }, 
+ { id:'scheda-purple', nome:'Purple', bordo:'#8860A0', sfondo:'#2C1E38', titolo1:'#4A3060', titolo2:'#C898E0', sfondo2:'#3A2848', testo:'#E0C8F5', vitale:'#FAF5FF' }, 
+ { id:'scheda-teal', nome:'Teal', bordo:'#508888', sfondo:'#283838', titolo1:'#3C5858', titolo2:'#80D0C8', sfondo2:'#304848', testo:'#B8E8E4', vitale:'#F0FFFD' }, 
+ { id:'scheda-violetash', nome:'Violet Ash', bordo:'#786890', sfondo:'#241E2E', titolo1:'#403048', titolo2:'#B0A0D0', sfondo2:'#302838', testo:'#D0C8E8', vitale:'#F5F2FF' }, 
+ { id:'scheda-rust', nome:'Rust', bordo:'#A06878', sfondo:'#281820', titolo1:'#482830', titolo2:'#D09098', sfondo2:'#382028', testo:'#E8C0C8', vitale:'#FAEEF0' }, 
+ { id:'scheda-hacker', nome:'Hacker', bordo:'#00B8A0', sfondo:'#020808', titolo1:'#081A16', titolo2:'#00E8C8', sfondo2:'#050E0C', testo:'#80F0E0', vitale:'#E0FFFA' }, 
+ { id:'scheda-neon', nome:'Neon', bordo:'#E040A0', sfondo:'#060610', titolo1:'#0C2028', titolo2:'#00C8D8', sfondo2:'#0C0C14', testo:'#C0E8F0', vitale:'#FFFFFF' }, 
+ { id:'scheda-sage', nome:'Sage', bordo:'#808870', sfondo:'#DCCAB8', titolo1:'#A8B898', titolo2:'#786040', sfondo2:'#C8B8A0', testo:'#201808', vitale:'#080C04' }, 
+ { id:'scheda-darkflower', nome:'Dark Flower', bordo:'#C06878', sfondo:'#182030', titolo1:'#301828', titolo2:'#5080B0', sfondo2:'#101828', testo:'#F0C8D0', vitale:'#FFF0F4' }, 
+ { id:'scheda-poison', nome:'Poison', bordo:'#40B0A0', sfondo:'#2C1040', titolo1:'#081C20', titolo2:'#8040B0', sfondo2:'#200C30', testo:'#B0E8E0', vitale:'#F0FFFC' }, 
+ { id:'scheda-articmint', nome:'Artic Mint', bordo:'#508878', sfondo:'#182030', titolo1:'#102020', titolo2:'#405878', sfondo2:'#101828', testo:'#B8D0C8', vitale:'#EAF4F0' } 
+]; 
+ 
+// ============================================================ 
+// STATO GLOBALE 
+// ============================================================ 
+var stato = { 
+ modalita: null, 
+ palette: null, 
+ schedaOriginale: null 
+}; 
+ 
+// ============================================================ 
+// NAVIGAZIONE TRA SCHERMATE 
+// ============================================================ 
+function mostraSchermata(id) { 
+ var schermate = ['schermata-scelta', 'schermata-palette', 'schermata-form']; 
+ for (var i = 0; i < schermate.length; i++) { 
+  var el = document.getElementById(schermate[i]); 
+  if (el) el.style.display = 'none'; 
+ } 
+ var target = document.getElementById(id); 
+ if (target) { 
+  target.style.display = 'block'; 
+  target.style.opacity = '0'; 
+  target.style.transform = 'translateY(20px)'; 
+  setTimeout(function() { 
+   target.style.transition = 'opacity 0.4s ease, transform 0.4s ease'; 
+   target.style.opacity = '1'; 
+   target.style.transform = 'translateY(0)'; 
+  }, 10); 
+ } 
+} 
+ 
+function scegliModalita(modalita) { 
+ stato.modalita = modalita; 
+ var btnNuova = document.getElementById('btn-nuova'); 
+ var btnModifica = document.getElementById('btn-modifica'); 
+ if (modalita === 'nuova') { 
+  btnNuova.style.borderColor = '#CFF09E'; 
+  btnNuova.style.background = 'rgba(207,240,158,0.12)'; 
+  btnModifica.style.borderColor = '#3B8686'; 
+  btnModifica.style.background = 'rgba(0,0,0,0.2)'; 
+ } else { 
+  btnModifica.style.borderColor = '#CFF09E'; 
+  btnModifica.style.background = 'rgba(207,240,158,0.12)'; 
+  btnNuova.style.borderColor = '#3B8686'; 
+  btnNuova.style.background = 'rgba(0,0,0,0.2)'; 
+ } 
+ setTimeout(function() { 
+  mostraSchermata('schermata-palette'); 
+  costruisciGalleriaPalette(); 
+ }, 300); 
+} 
+ 
+function costruisciGalleriaPalette() { 
+ var container = document.getElementById('galleria-palette'); 
+ var html = ''; 
+ 
+ if (stato.modalita === 'modifica') { 
+  html += '<div onclick="selezionaPalette(\'mantieni\')" id="card-mantieni" style="cursor:pointer; border:2px dashed #3B8686; border-radius:12px; overflow:hidden; transition:all 0.3s; width:220px; display:inline-block; margin:12px; vertical-align:top; box-shadow:0 4px 15px rgba(0,0,0,0.3);">'; 
+  html += '<div style="height:140px; background:#0B486B; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;">'; 
+  html += '<i class="fa-solid fa-rotate-left" style="font-size:2.2em; color:#8FBEBA;"></i>'; 
+  html += '<span style="color:#8FBEBA; font-size:0.85em; font-style:italic;">nessuna modifica</span>'; 
+  html += '</div>'; 
+  html += '<div style="padding:10px 14px; background:#0B486B; border-top:1px solid #3B8686;">'; 
+  html += '<span style="color:#8FBEBA; font-family:\'Montserrat\'; font-size:1.2em;">Mantieni attuale</span>'; 
+  html += '</div></div>'; 
+ } 
+ 
+ for (var i = 0; i < PALETTE.length; i++) { 
+  var p = PALETTE[i]; 
+  html += '<div onclick="selezionaPalette(\'' + p.id + '\')" id="card-' + p.id + '" style="cursor:pointer; border:2px solid ' + p.bordo + '; border-radius:12px; overflow:hidden; transition:all 0.3s; width:220px; display:inline-block; margin:12px; vertical-align:top; box-shadow:0 4px 15px rgba(0,0,0,0.3);">'; 
+  html += '<div style="height:140px; background:' + p.sfondo + '; padding:14px; box-sizing:border-box;">'; 
+  html += '<div style="background:' + p.titolo1 + '; border:1px solid ' + p.bordo + '; border-radius:6px; padding:6px 10px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">'; 
+  html += '<div style="width:28px; height:28px; border-radius:50%; background:' + p.sfondo2 + '; border:1px solid ' + p.bordo + ';"></div>'; 
+  html += '<div style="flex:1;">'; 
+  html += '<div style="height:6px; border-radius:3px; background:' + p.titolo2 + '; margin-bottom:4px; width:70%;"></div>'; 
+  html += '<div style="height:5px; border-radius:3px; background:' + p.testo + '; opacity:0.5; width:50%;"></div>'; 
+  html += '</div></div>'; 
+  html += '<div style="display:flex; gap:5px; margin-bottom:6px;">'; 
+  for (var b = 0; b < 4; b++) { 
+   html += '<div style="flex:1; height:20px; border-radius:4px; background:' + p.sfondo2 + '; border:1px solid ' + p.bordo + '; display:flex; align-items:center; justify-content:center;">'; 
+   html += '<div style="width:60%; height:4px; border-radius:2px; background:' + p.titolo2 + ';"></div>'; 
+   html += '</div>'; 
+  } 
+  html += '</div>'; 
+  html += '<div style="height:5px; border-radius:3px; background:' + p.testo + '; opacity:0.4; width:90%; margin-bottom:4px;"></div>'; 
+  html += '<div style="height:5px; border-radius:3px; background:' + p.testo + '; opacity:0.3; width:70%;"></div>'; 
+  html += '</div>'; 
+  html += '<div style="padding:10px 14px; background:' + p.titolo1 + '; border-top:1px solid ' + p.bordo + '; display:flex; align-items:center; justify-content:space-between;">'; 
+  html += '<span style="color:' + p.vitale + '; font-family:\'Montserrat\',serif; font-size:1.2em; font-weight:600;">' + p.nome + '</span>'; 
+  html += '<i class="fa-solid fa-palette" style="color:' + p.testo + '; font-size:0.9em;"></i>'; 
+  html += '</div></div>'; 
+ } 
+ 
+ container.innerHTML = html; 
+} 
+ 
+function selezionaPalette(paletteId) { 
+ stato.palette = paletteId; 
+ var allIds = []; 
+ for (var i = 0; i < PALETTE.length; i++) allIds.push('card-' + PALETTE[i].id); 
+ allIds.push('card-mantieni'); 
+ for (var i = 0; i < allIds.length; i++) { 
+  var card = document.getElementById(allIds[i]); 
+  if (card) { 
+   card.style.transform = 'scale(1)'; 
+   card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)'; 
+   card.style.outline = 'none'; 
+  } 
+ } 
+ var sel = document.getElementById('card-' + paletteId); 
+ if (sel) { 
+  sel.style.transform = 'scale(1.05)'; 
+  sel.style.boxShadow = '0 0 25px rgba(207,240,158,0.35)'; 
+  sel.style.outline = '2px solid #CFF09E'; 
+ } 
+ setTimeout(function() { 
+  mostraSchermata('schermata-form'); 
+  costruisciForm(); 
+ }, 400); 
+} 
+ 
+// ============================================================ 
+// STILI BASE 
+// ============================================================ 
+var STILE_SEZIONE = 'background:#0B486B; border:2px solid #292354; border-radius:12px; padding:25px; margin-bottom:20px;'; 
+var STILE_INPUT = 'width:100%; padding:10px 14px; background:#292354; border:1px solid #3B8686; border-radius:6px; color:#E2F7C4; font-family:\'Montserrat\'; font-size:1em; box-sizing:border-box; outline:none;'; 
+var STILE_LABEL = 'display:block; color:#CFF09E; font-size:0.9em; margin-bottom:5px; font-family:\'Montserrat\';'; 
+var STILE_READONLY = 'display:block; padding:10px 14px; background:#292354; border:1px solid #3B8686; border-radius:6px; color:#8FBEBA; font-family:\'Montserrat\'; font-size:1em; opacity:0.75;'; 
+ 
+// ============================================================ 
+// HELPERS LAYOUT 
+// ============================================================ 
+function riga2(a, b) { 
+ return '<table style="width:100%; border-collapse:collapse; table-layout:fixed;">' + 
+  '<tr><td style="width:50%; padding-right:7px; vertical-align:top;">' + a + '</td>' + 
+  '<td style="width:50%; padding-left:7px; vertical-align:top;">' + b + '</td></tr>' + 
+  '</table>'; 
+} 
+ 
+function riga3(a, b, c) { 
+ return '<table style="width:100%; border-collapse:collapse; table-layout:fixed;">' + 
+  '<tr>' + 
+  '<td style="width:33%; padding-right:5px; vertical-align:top;">' + a + '</td>' + 
+  '<td style="width:34%; padding-left:5px; padding-right:5px; vertical-align:top;">' + b + '</td>' + 
+  '<td style="width:33%; padding-left:5px; vertical-align:top;">' + c + '</td>' + 
+  '</tr></table>'; 
+} 
+ 
+function riga4(a, b, c, d) { 
+ return '<table style="width:100%; border-collapse:collapse; table-layout:fixed;">' + 
+  '<tr>' + 
+  '<td style="width:25%; padding-right:4px; vertical-align:top;">' + a + '</td>' + 
+  '<td style="width:25%; padding-left:4px; padding-right:4px; vertical-align:top;">' + b + '</td>' + 
+  '<td style="width:25%; padding-left:4px; padding-right:4px; vertical-align:top;">' + c + '</td>' + 
+  '<td style="width:25%; padding-left:4px; vertical-align:top;">' + d + '</td>' + 
+  '</tr></table>'; 
+} 
+ 
+function rigaStat5(celle) { 
+ var html = '<table style="width:100%; border-collapse:collapse; table-layout:fixed; margin-bottom:8px;"><tr>'; 
+ for (var i = 0; i < celle.length; i++) { 
+  var pl = i > 0 ? 'padding-left:4px;' : ''; 
+  var pr = i < celle.length - 1 ? 'padding-right:4px;' : ''; 
+  html += '<td style="width:20%; ' + pl + pr + ' vertical-align:top;">' + celle[i] + '</td>'; 
+ } 
+ html += '</tr></table>'; 
+ return html; 
+} 
+ 
+// ============================================================ 
+// COSTRUZIONE FORM 
+// ============================================================ 
+function costruisciForm() { 
+ var container = document.getElementById('form-container'); 
+ var isNuova = stato.modalita === 'nuova'; 
+ var html = ''; 
+ 
+ // PATCH 1: Importa in cima (solo modalità modifica) 
+ if (!isNuova) { 
+  html += sezioneForm('<i class="fa-solid fa-file-import"></i> Importa Scheda Esistente', costruisciImporta()); 
+ } 
+ 
+ html += sezioneForm('<i class="fa-solid fa-user"></i> Dati Personali', costruisciDatiPersonali(isNuova)); 
+ html += sezioneForm('<i class="fa-solid fa-image"></i> Immagini', costruisciImmagini()); 
+ html += sezioneForm('<i class="fa-solid fa-star"></i> Info &amp; Personalità', costruisciInfo()); 
+ html += sezioneForm('<i class="fa-solid fa-chart-bar"></i> Statistiche', costruisciStatistiche(isNuova)); 
+ html += sezioneForm('<i class="fa-solid fa-fire"></i> Abilità Nen', costruisciNen(isNuova)); 
+ html += sezioneForm('<i class="fa-solid fa-scroll"></i> Quest', costruisciQuest(isNuova)); 
+ html += sezioneForm('<i class="fa-solid fa-bag-shopping"></i> Baule', costruisciBalue()); 
+ html += sezioneForm('<i class="fa-solid fa-music"></i> Musica', costruisciMusica()); 
+ 
+ html += '<div style="text-align:center; margin-top:40px; padding-bottom:40px;">'; 
+ html += '<button onclick="generaScheda()" style="background:linear-gradient(135deg,#A8DBA8 0%,#79BD9A 100%); color:#1a2e1a; border:none; padding:18px 60px; font-size:1.3em; font-weight:700; border-radius:10px; cursor:pointer; font-family:\'Montserrat\'; box-shadow:0 6px 25px rgba(0,0,0,0.4); text-transform:uppercase; letter-spacing:2px; transition:all 0.3s;">'; 
+ html += '<i class="fa-solid fa-wand-magic-sparkles"></i> Genera Scheda</button>'; 
+ html += '</div>'; 
+ 
+ container.innerHTML = html; 
+ 
+ if (isNuova) { 
+  var luogoEl = document.getElementById('campo-luogo'); 
+  var classeEl = document.getElementById('campo-classe'); 
+  if (luogoEl) luogoEl.onchange = aggiornaStatNuova; 
+  if (classeEl) classeEl.onchange = aggiornaStatNuova; 
+  aggiornaRazza(true); 
+ } else { 
+  aggiornaRazza(false); 
+  aggiornaCompetenze(); 
+  // Fedina penale: mostra/nascondi taglia al cambio manuale 
+  var feEl = document.getElementById('campo-fedina'); 
+  if (feEl) feEl.onchange = function(){ aggiornaFedina(false); }; 
+ } 
+} 
+ 
+function sezioneForm(titolo, contenuto) { 
+ return '<div style="' + STILE_SEZIONE + '">' + 
+  '<h3 style="color:#CFF09E; font-family:\'Montserrat\'; font-size:1.35em; margin-bottom:20px; border-bottom:1px solid #3B8686; padding-bottom:10px;">' + titolo + '</h3>' + 
+  contenuto + '</div>'; 
+} 
+ 
+function inputText(id, label, placeholder, valore, readonly) { 
+ var stile = readonly ? STILE_INPUT + ' opacity:0.55; cursor:not-allowed;' : STILE_INPUT; 
+ var ro = readonly ? ' readonly' : ''; 
+ return '<div style="margin-bottom:14px;">' + 
+  '<label style="' + STILE_LABEL + '">' + label + '</label>' + 
+  '<input type="text" id="' + id + '" placeholder="' + (placeholder||'') + '" value="' + (valore||'') + '"' + ro + ' style="' + stile + '">' + 
+  '</div>'; 
+} 
+ 
+function inputDate(id, label) { 
+ var mesi = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno', 
+  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']; 
+ var opG = '<option value="">—</option>', opM = '<option value="">—</option>', opA = '<option value="">—</option>'; 
+ for (var g = 1; g <= 31; g++) { 
+  opG += '<option value="' + (g < 10 ? '0'+g : g) + '">' + g + '</option>'; 
+ } 
+ for (var m = 0; m < 12; m++) { 
+  opM += '<option value="' + mesi[m] + '">' + mesi[m] + '</option>'; 
+ } 
+ for (var a = 2017; a >= 1900; a--) { 
+  opA += '<option value="' + a + '">' + a + '</option>'; 
+ } 
+ var sel = STILE_INPUT + ' background:#292354;'; 
+ return '<div style="margin-bottom:14px;">' + 
+  '<label style="' + STILE_LABEL + '">' + label + '</label>' + 
+  '<table style="width:100%; border-collapse:collapse; table-layout:fixed;">' + 
+  '<tr>' + 
+  '<td style="width:25%; padding-right:6px; vertical-align:top;">' + 
+  '<select id="' + id + '-g" style="' + sel + '">' + opG + '</select>' + 
+  '<div style="color:#8FBEBA; font-size:0.75em; text-align:center; margin-top:3px;">Giorno</div>' + 
+  '</td>' + 
+  '<td style="width:45%; padding-left:3px; padding-right:3px; vertical-align:top;">' + 
+  '<select id="' + id + '-m" style="' + sel + '">' + opM + '</select>' + 
+  '<div style="color:#8FBEBA; font-size:0.75em; text-align:center; margin-top:3px;">Mese</div>' + 
+  '</td>' + 
+  '<td style="width:30%; padding-left:6px; vertical-align:top;">' + 
+  '<select id="' + id + '-a" style="' + sel + '">' + opA + '</select>' + 
+  '<div style="color:#8FBEBA; font-size:0.75em; text-align:center; margin-top:3px;">Anno</div>' + 
+  '</td>' + 
+  '</tr></table>' + 
+  '</div>'; 
+} 
+ 
+function leggiData(id) { 
+ var g = document.getElementById(id + '-g'); 
+ var m = document.getElementById(id + '-m'); 
+ var a = document.getElementById(id + '-a'); 
+ if (!g || !m || !a) return '—'; 
+ var vg = g.value, vm = m.value, va = a.value; 
+ // Giorno da solo non è valido 
+ if (vg && !vm && !va) return '—'; 
+ if (!vg && !vm && !va) return '—'; 
+ // Costruisce la stringa con solo i pezzi presenti 
+ if (vg && vm && va)   return vg + ' ' + vm + ' ' + va; 
+ if (vg && vm && !va)  return vg + ' ' + vm; 
+ if (!vg && vm && va)  return vm + ' ' + va; 
+ if (!vg && vm && !va) return vm; 
+ if (!vg && !vm && va) return va; 
+ return '—'; 
+} 
+ 
+function inputTextarea(id, label, placeholder, righe) { 
+ righe = righe || 4; 
+ return '<div style="margin-bottom:14px;">' + 
+  '<label style="' + STILE_LABEL + '">' + label + '</label>' + 
+  '<textarea id="' + id + '" placeholder="' + (placeholder||'') + '" rows="' + righe + '" style="' + STILE_INPUT + ' resize:vertical;"></textarea>' + 
+  '</div>'; 
+} 
+ 
+function inputSelect(id, label, opzioni) { 
+ var html = '<div style="margin-bottom:14px;">' + 
+  '<label style="' + STILE_LABEL + '">' + label + '</label>' + 
+  '<select id="' + id + '" style="' + STILE_INPUT + ' background:#292354;">'; 
+ for (var i = 0; i < opzioni.length; i++) { 
+  html += '<option value="' + opzioni[i] + '">' + opzioni[i] + '</option>'; 
+ } 
+ html += '</select></div>'; 
+ return html; 
+} 
+ 
+function campoReadonly(label, valore) { 
+ return '<div style="margin-bottom:14px;">' + 
+  '<label style="' + STILE_LABEL + '">' + label + '</label>' + 
+  '<div style="' + STILE_READONLY + '">' + valore + '</div>' + 
+  '</div>'; 
+} 
+ 
+// ============================================================ 
+// COSTRUTTORI SEZIONI 
+// ============================================================ 
+function costruisciDatiPersonali(isNuova) { 
+ var html = ''; 
+ html += riga2(inputText('campo-nome','Nome','Es. Gon'), inputText('campo-cognome','Cognome','Es. Freecs')); 
+ html += riga2(inputText('campo-genere','Genere','Uomo / Donna / Neutro / Ecc.'), 
+  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Razza</label>' + 
+  '<select id="campo-razza" onchange="aggiornaRazza('+isNuova+')" style="'+STILE_INPUT+' background:#292354;">' + 
+  '<option value="Umano">Umano</option>' + 
+  '<option value="Bestia Demoniaca">Bestia Demoniaca</option>' + 
+  '</select></div>' 
+ ); 
+ // Specie (visibile solo se Bestia Demoniaca) 
+ html += '<div id="campo-specie-wrap" style="display:none; margin-bottom:14px;">' + 
+  '<label style="'+STILE_LABEL+'">Specie</label>' + 
+  '<select id="campo-specie" onchange="aggiornaRazza('+isNuova+')" style="'+STILE_INPUT+' background:#292354;">'; 
+ for (var sp = 0; sp < SPECIE_BESTIA.length; sp++) { 
+  html += '<option value="'+SPECIE_BESTIA[sp]+'">'+SPECIE_BESTIA[sp]+'</option>'; 
+ } 
+ html += '</select></div>'; 
+ // Rank e Stato di Conservazione (readonly, calcolati da specie) 
+ html += '<div id="campo-rank-wrap" style="display:none;">' + 
+  riga2( 
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Rank di Pericolosità</label><div id="campo-rank-val" style="'+STILE_READONLY+'">—</div></div>', 
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Stato di Conservazione</label><div id="campo-conservazione-val" style="'+STILE_READONLY+'">—</div></div>' 
+  ) + 
+ '</div>'; 
+ // Luogo di nascita — menù unico, le opzioni vengono filtrate da aggiornaRazza 
+ html += '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Luogo di nascita</label>' + 
+  '<select id="campo-luogo" onchange="aggiornaStatNuova()" style="'+STILE_INPUT+' background:#292354;"></select></div>'; 
+ html += inputDate('campo-datanascita', 'Data di nascita'); 
+ html += riga2(inputSelect('campo-segno','Segno zodiacale', SEGNI_ZODIACALI), inputSelect('campo-segnocinese','Segno zodiacale cinese', SEGNI_CINESI)); 
+ html += riga2(inputSelect('campo-mbti','MBTI', MBTI_TIPI), inputSelect('campo-allineamento','Allineamento', ALLINEAMENTI)); 
+ html += inputText('campo-mestiere','Mestiere','Es. Assassino'); 
+ // Classe (visibile solo per Umani) 
+ html += '<div id="campo-classe-wrap">' + 
+  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Classe</label>' + 
+  '<select id="campo-classe" style="'+STILE_INPUT+' background:#292354;"></select></div>' + 
+ '</div>'; 
+ // Fedina penale 
+ if (isNuova) { 
+  html += '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Fedina Penale</label><div id="campo-fedina-val" style="'+STILE_READONLY+'">Incensurato</div></div>'; 
+ } else { 
+  html += '<div id="campo-fedina-wrap" style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Fedina Penale</label>' + 
+   '<select id="campo-fedina" style="'+STILE_INPUT+' background:#292354;">' + 
+   '<option value="Incensurato">Incensurato</option>' + 
+   '<option value="Ricercato">Ricercato</option>' + 
+   '</select></div>'; 
+ } 
+ // Taglia (visibile solo se Ricercato) 
+ html += '<div id="campo-taglia-wrap" style="display:none;">'; 
+ if (isNuova) { 
+  // Per nuove schede la classificazione è sempre E (per Bestie rank A/B/C), readonly 
+  html += riga2( 
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Classificazione Taglia</label><div id="campo-classtaglia-val" style="'+STILE_READONLY+'">E</div></div>', 
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Valore Taglia (Jenny)</label><div id="campo-valtaglia-val" style="'+STILE_READONLY+'">1.000</div></div>' 
+  ); 
+ } else { 
+  var opzioniTaglia = ''; 
+  for (var ct = 0; ct < CLASSIFICAZIONI_TAGLIA.length; ct++) { 
+   opzioniTaglia += '<option value="'+CLASSIFICAZIONI_TAGLIA[ct]+'">'+CLASSIFICAZIONI_TAGLIA[ct]+'</option>'; 
+  } 
+  html += riga2( 
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Classificazione Taglia</label>' + 
+   '<select id="campo-classtaglia" onchange="aggiornaTaglia()" style="'+STILE_INPUT+' background:#292354;">' + 
+   opzioniTaglia + '</select></div>', 
+   inputText('campo-valtaglia','Valore Taglia (Jenny)','Es. 1000') 
+  ); 
+ } 
+ html += '</div>'; 
+ 
+ if (isNuova) { 
+  html += campoReadonly('Status', 'Nessuno'); 
+  html += riga4( 
+   campoReadonly('Livello', LIVELLO_INIZIALE), 
+   campoReadonly('EXP', EXP_INIZIALE+'/'+EXP_MASSIMA), 
+   campoReadonly('Jenny', JENNY_INIZIALI.toLocaleString()), 
+   campoReadonly('HC', HC_INIZIALI) 
+  ); 
+ } else { 
+  html += inputSelect('campo-status','Status', STATUS); 
+  html += riga2( 
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Livello</label><input type="text" id="campo-livello" placeholder="Es. 30" oninput="aggiornaCompetenze()" style="'+STILE_INPUT+'"></div>', 
+   inputText('campo-exp','EXP attuale','Es. 50') 
+  ); 
+  html += inputText('campo-exptot','EXP per level up','', '100', true); 
+  html += riga2(inputText('campo-jenny','Jenny','Es. 10000'), inputText('campo-hc','HC','Es. 0')); 
+ } 
+ return html; 
+} 
+ 
+function costruisciImmagini() { 
+ return inputText('campo-img-laterale','Immagine Header (URL) — dimensioni ideali: 664x184px','https://...') + 
+  inputText('campo-img-dati','Immagine slide Dati (URL) — dimensioni ideali: 154x429px','https://...') + 
+  inputText('campo-img-info','Immagine slide Info (URL) — dimensioni ideali: 154x429px','https://...') + 
+  inputText('campo-img-abilita','Immagine slide Abilità (URL) — dimensioni ideali: 154x429px','https://...'); 
+} 
+ 
+function costruisciInfo() { 
+ var html = riga3( 
+  inputText('campo-agg1','Aggettivo 1','Es. Coraggioso'), 
+  inputText('campo-agg2','Aggettivo 2','Es. Determinato'), 
+  inputText('campo-agg3','Aggettivo 3','Es. Creativo') 
+ ); 
+ html += inputText('campo-citazione','Citazione del personaggio','Citazione...'); 
+ html += inputTextarea('campo-aspetto','Aspetto','Descrivi l\'aspetto fisico del tuo personaggio...', 5); 
+ html += inputTextarea('campo-background','Background','Racconta la storia del tuo personaggio...', 6); 
+ return html; 
+} 
+ 
+function costruisciStatistiche(isNuova) { 
+ var html = ''; 
+ var nomiStat = ['Forza','Resistenza','Velocità','Riflessi','Destrezza','Mira','Intelligenza','Carisma','Istinto','Fortuna']; 
+ var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna']; 
+ 
+ if (isNuova) { 
+  html += '<p style="color:#8FBEBA; font-size:0.9em; margin-bottom:8px; font-style:italic;">Statistiche di base calcolate da luogo e classe. Puoi ridistribuire <b>25 punti extra</b> (multipli di 5) a piacimento, escluse Vita e Aura.</p>'; 
+  html += '<div style="background:#1a2e45; border:1px solid #3B8686; border-radius:8px; padding:10px 16px; margin-bottom:14px; display:flex; align-items:center; gap:10px;">'; 
+  html += '<i class="fa-solid fa-coins" style="color:#CFF09E;"></i> '; 
+  html += '<span id="punti-extra-counter" style="color:#8FBEBA; font-size:0.95em; font-weight:600;">25 punti rimanenti</span>'; 
+  html += '</div>'; 
+  var r1 = [], r2 = []; 
+  for (var i = 0; i < 5; i++) { 
+   r1.push( 
+    '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:8px 4px;">' + 
+    '<div style="color:#8FBEBA; font-size:0.75em; margin-bottom:4px;">'+nomiStat[i]+'</div>' + 
+    '<div id="stat-'+ls[i]+'" style="color:#CFF09E; font-size:1.2em; font-weight:700;">5</div>' + 
+    '<span style="display:none;" id="stat-base-'+ls[i]+'">5</span>' + 
+    '<input type="hidden" id="stat-extra-'+ls[i]+'" value="0">' + 
+    '<div style="display:flex; justify-content:center; gap:4px; margin-top:5px;">' + 
+    '<button onclick="modificaStatExtra(\''+ls[i]+'\',-5)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">−</button>' + 
+    '<button onclick="modificaStatExtra(\''+ls[i]+'\',5)"  style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">+</button>' + 
+    '</div></div>' 
+   ); 
+  } 
+  for (var j = 5; j < 10; j++) { 
+   r2.push( 
+    '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:8px 4px;">' + 
+    '<div style="color:#8FBEBA; font-size:0.75em; margin-bottom:4px;">'+nomiStat[j]+'</div>' + 
+    '<div id="stat-'+ls[j]+'" style="color:#CFF09E; font-size:1.2em; font-weight:700;">5</div>' + 
+    '<span style="display:none;" id="stat-base-'+ls[j]+'">5</span>' + 
+    '<input type="hidden" id="stat-extra-'+ls[j]+'" value="0">' + 
+    '<div style="display:flex; justify-content:center; gap:4px; margin-top:5px;">' + 
+    '<button onclick="modificaStatExtra(\''+ls[j]+'\',-5)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">−</button>' + 
+    '<button onclick="modificaStatExtra(\''+ls[j]+'\',5)"  style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">+</button>' + 
+    '</div></div>' 
+   ); 
+  } 
+  html += rigaStat5(r1); 
+  html += rigaStat5(r2); 
+  html += riga2( 
+   '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:10px;"><div style="color:#8FBEBA; font-size:0.78em; margin-bottom:4px;">Vita</div><div id="stat-vita" style="color:#CFF09E; font-size:1.3em; font-weight:700;">300</div></div>', 
+   '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:10px;"><div style="color:#8FBEBA; font-size:0.78em; margin-bottom:4px;">Aura</div><div id="stat-aura" style="color:#CFF09E; font-size:1.3em; font-weight:700;">500</div></div>' 
+  ); 
+ } else { 
+  html += '<p style="color:#8FBEBA; font-size:0.85em; margin-bottom:15px; font-style:italic;">Multipli di 5 (Vita e Aura: multipli di 100). Max stat normali: 250 (400 se over), Vita: 3000, Aura: 5000.</p>'; 
+  var r3 = [], r4 = []; 
+  for (var k = 0; k < 5; k++) { 
+   r3.push('<div style="text-align:center;">' + 
+    '<label style="display:block; color:#8FBEBA; font-size:0.78em; margin-bottom:3px;">' + nomiStat[k] + '</label>' + 
+    '<input type="number" id="stat-' + ls[k] + '" value="5" min="5" max="400" step="5" onchange="validaStat(this,false)" style="' + STILE_INPUT + ' text-align:center; padding:8px 4px;">' + 
+    '<label style="display:block; color:#8FBEBA; font-size:0.72em; margin-top:3px; cursor:pointer;"><input type="checkbox" id="over-' + ls[k] + '" onchange="toggleOver(this,\'' + ls[k] + '\')"> over</label></div>'); 
+  } 
+  for (var m2 = 5; m2 < 10; m2++) { 
+   r4.push('<div style="text-align:center;">' + 
+    '<label style="display:block; color:#8FBEBA; font-size:0.78em; margin-bottom:3px;">' + nomiStat[m2] + '</label>' + 
+    '<input type="number" id="stat-' + ls[m2] + '" value="5" min="5" max="400" step="5" onchange="validaStat(this,false)" style="' + STILE_INPUT + ' text-align:center; padding:8px 4px;">' + 
+    '<label style="display:block; color:#8FBEBA; font-size:0.72em; margin-top:3px; cursor:pointer;"><input type="checkbox" id="over-' + ls[m2] + '" onchange="toggleOver(this,\'' + ls[m2] + '\')"> over</label></div>'); 
+  } 
+  html += rigaStat5(r3); 
+  html += rigaStat5(r4); 
+  html += riga2( 
+   '<div><label style="display:block; color:#8FBEBA; font-size:0.78em; margin-bottom:3px;">Vita</label><input type="number" id="stat-vita" value="300" min="300" max="3000" step="100" onchange="validaStat(this,true)" style="' + STILE_INPUT + ' text-align:center;"></div>', 
+   '<div><label style="display:block; color:#8FBEBA; font-size:0.78em; margin-bottom:3px;">Aura</label><input type="number" id="stat-aura" value="500" min="500" max="5000" step="100" onchange="validaStat(this,true)" style="' + STILE_INPUT + ' text-align:center;"></div>' 
+  ); 
+  html += '<div style="margin-top:22px; border-top:1px solid #3B8686; padding-top:18px;">'; 
+  html += '<h4 style="color:#CFF09E; font-family:\'Montserrat\'; margin-bottom:14px;"><i class="fa-solid fa-puzzle-piece"></i> Competenze</h4>'; 
+  for (var n = 0; n < 5; n++) { 
+   html += '<div id="comp-slot-'+n+'" style="background:#292354; border:1px solid #3B8686; border-radius:8px; padding:14px; margin-bottom:10px;">'; 
+   html += '<div style="color:#8FBEBA; font-size:0.82em; margin-bottom:10px;" id="comp-slot-label-'+n+'"><i class="fa-solid fa-lock"></i> Slot ' + (n+1) + ' — sbloccabile al Lv. ' + SBLOCCO_COMPETENZE[n] + '</div>'; 
+   html += '<div id="comp-slot-fields-'+n+'">'; 
+   html += inputText('comp-nome-'+n,'Nome competenza','Es. Spadaccino Provetto'); 
+   html += riga2(inputText('comp-lv-'+n,'Livello','Es. 1'), inputText('comp-oggetto-'+n,'Oggetto','Es. Spada')); 
+   html += inputTextarea('comp-desc-'+n,'Descrizione','Descrizione della competenza...', 2); 
+   html += '</div>'; 
+   html += '</div>'; 
+  } 
+  html += '</div>'; 
+ } 
+ return html; 
+} 
+ 
+function costruisciNen(isNuova) { 
+ if (isNuova) { 
+  var html = '<p style="color:#8FBEBA; font-size:0.9em; margin-bottom:15px; font-style:italic;">L\'Hatsu viene sbloccato in seguito. Nen e Tenacia sono fissi.</p>'; 
+  html += riga2(campoReadonly('Nen', NEN_INIZIALE+'%'), campoReadonly('Tenacia', TENACIA_INIZIALE+'%')); 
+  html += campoReadonly('Hatsu', '<i class="mdi mdi-fire"></i> Non ancora sbloccato'); 
+  return html; 
+ } 
+ var html = inputSelect('campo-hatsu','Tipo Hatsu', TIPI_HATSU); 
+ html += riga2(inputText('campo-nen','Nen (%)','Es. 95'), inputText('campo-tenacia','Tenacia (%)','Es. 75')); 
+ html += '<div style="margin-top:8px;">'; 
+ html += '<label style="' + STILE_LABEL + '">Tecniche Hatsu</label>'; 
+ html += '<div id="lista-tecniche"></div>'; 
+ html += '<button onclick="aggiungiTecnica()" style="background:transparent; color:#8FBEBA; border:1px dashed #3B8686; padding:8px 20px; border-radius:6px; cursor:pointer; font-family:\'Montserrat\'; margin-top:5px;"><i class="fa-solid fa-plus"></i> Aggiungi Tecnica</button>'; 
+ html += '</div>'; 
+ return html; 
+} 
+ 
+function costruisciQuest(isNuova) { 
+ if (isNuova) { 
+  return '<p style="color:#8FBEBA; font-size:0.9em; font-style:italic;"><i class="fa-solid fa-info-circle"></i> Un nuovo PG non ha ancora partecipato a quest. La sezione sarà vuota nella scheda generata.</p>'; 
+ } 
+ var html = '<div id="lista-quest"></div>'; 
+ html += '<button onclick="aggiungiQuest()" style="background:transparent; color:#8FBEBA; border:1px dashed #3B8686; padding:8px 20px; border-radius:6px; cursor:pointer; font-family:\'Montserrat\'; margin-top:5px;"><i class="fa-solid fa-plus"></i> Aggiungi Quest</button>'; 
+ return html; 
+} 
+ 
+function aggiungiQuest() { 
+ var lista = document.getElementById('lista-quest'); 
+ var idx = lista.children.length; 
+ var div = document.createElement('div'); 
+ div.id = 'quest-row-' + idx; 
+ div.style.cssText = 'margin-bottom:8px;'; 
+ div.innerHTML = 
+  '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' + 
+  '<td style="width:44%; padding-right:5px; vertical-align:bottom;">' + inputText('quest-nome-'+idx,'Nome quest','Es. La Prima Missione') + '</td>' + 
+  '<td style="width:44%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('quest-link-'+idx,'Link','https://...') + '</td>' + 
+  '<td style="width:12%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' + 
+  '<button onclick="rimuoviElemento(\'quest-row-'+idx+'\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' + 
+  '</td></tr></table>'; 
+ lista.appendChild(div); 
+} 
+ 
+function aggiungiTecnica() { 
+ var lista = document.getElementById('lista-tecniche'); 
+ var idx = lista.children.length; 
+ var div = document.createElement('div'); 
+ div.id = 'tecnica-row-' + idx; 
+ div.style.cssText = 'background:#1a2e45; border:1px solid #3B8686; border-radius:8px; padding:12px; margin-bottom:10px;'; 
+ div.innerHTML = 
+  '<table style="width:100%; border-collapse:collapse; table-layout:fixed; margin-bottom:6px;"><tr>' + 
+  '<td style="width:88%; padding-right:6px; vertical-align:bottom;">' + inputText('tecnica-nome-'+idx,'Nome tecnica','Es. Scudo di Luce') + '</td>' + 
+  '<td style="width:12%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' + 
+  '<button onclick="rimuoviElemento(\'tecnica-row-'+idx+'\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' + 
+  '</td></tr></table>' + 
+  inputTextarea('tecnica-desc-'+idx,'Descrizione','Descrizione della tecnica...', 3); 
+ lista.appendChild(div); 
+} 
+ 
+function costruisciBalue() { 
+ var categorie = [ 
+  { nome:'Armi', id:'armi' }, 
+  { nome:'Equipaggiamento', id:'equip' }, 
+  { nome:'Oggetti Extra', id:'oggetti' }, 
+  { nome:'Materiali', id:'materiali' } 
+ ]; 
+ var html = ''; 
+ for (var i = 0; i < categorie.length; i++) { 
+  var cat = categorie[i]; 
+  html += '<div style="margin-bottom:18px;">'; 
+  html += '<h4 style="color:#CFF09E; font-family:\'Montserrat\'; font-size:1.2em; margin-bottom:8px;">' + cat.nome + '</h4>'; 
+  html += '<div id="lista-' + cat.id + '"></div>'; 
+  html += '<button onclick="aggiungiItem(\'' + cat.id + '\')" style="background:transparent; color:#8FBEBA; border:1px dashed #3B8686; padding:6px 16px; border-radius:6px; cursor:pointer; font-family:\'Montserrat\'; font-size:1em;"><i class="fa-solid fa-plus"></i> Aggiungi</button>'; 
+  html += '</div>'; 
+ } 
+ return html; 
+} 
+ 
+function aggiungiItem(categoria) { 
+ var lista = document.getElementById('lista-' + categoria); 
+ var idx = lista.children.length; 
+ var div = document.createElement('div'); 
+ div.id = categoria + '-row-' + idx; 
+ div.style.cssText = 'background:#1a2e45; border:1px solid #3B8686; border-radius:8px; padding:12px; margin-bottom:10px;'; 
+ 
+ // Riga 1: Nome + Qt + Livello/Usi + pulsante rimuovi 
+ var riga1 = ''; 
+ if (categoria === 'materiali') { 
+  // Materiali: solo Nome + Qt (nessun Livello/Usi) 
+  riga1 = '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' + 
+   '<td style="width:78%; padding-right:4px; vertical-align:bottom;">' + inputText(categoria+'-nome-'+idx,'Nome','Es. Erba medicinale') + '</td>' + 
+   '<td style="width:12%; padding-left:4px; padding-right:4px; vertical-align:bottom;">' + inputText(categoria+'-qt-'+idx,'Qt','1') + '</td>' + 
+   '<td style="width:10%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' + 
+   '<button onclick="rimuoviElemento(\'' + categoria + '-row-' + idx + '\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' + 
+   '</td></tr></table>'; 
+ } else if (categoria === 'oggetti') { 
+  riga1 = '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' + 
+   '<td style="width:52%; padding-right:4px; vertical-align:bottom;">' + inputText(categoria+'-nome-'+idx,'Nome','Es. Pozione') + '</td>' + 
+   '<td style="width:16%; padding-left:4px; padding-right:4px; vertical-align:bottom;">' + inputText(categoria+'-qt-'+idx,'Qt','1') + '</td>' + 
+   '<td style="width:22%; padding-left:4px; padding-right:4px; vertical-align:bottom;">' + inputText(categoria+'-usi-'+idx,'Usi (es. 0/3)','0/3') + '</td>' + 
+   '<td style="width:10%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' + 
+   '<button onclick="rimuoviElemento(\'' + categoria + '-row-' + idx + '\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' + 
+   '</td></tr></table>'; 
+ } else { 
+  // armi / equip 
+  riga1 = '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' + 
+   '<td style="width:52%; padding-right:4px; vertical-align:bottom;">' + inputText(categoria+'-nome-'+idx,'Nome','Es. Spada') + '</td>' + 
+   '<td style="width:16%; padding-left:4px; padding-right:4px; vertical-align:bottom;">' + inputText(categoria+'-qt-'+idx,'Qt','1') + '</td>' + 
+   '<td style="width:22%; padding-left:4px; padding-right:4px; vertical-align:bottom;">' + 
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Livello (max 5)</label>' + 
+   '<input type="number" id="'+categoria+'-lv-'+idx+'" value="0" min="0" max="5" style="'+STILE_INPUT+' text-align:center;"></div>' + 
+   '</td>' + 
+   '<td style="width:10%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' + 
+   '<button onclick="rimuoviElemento(\'' + categoria + '-row-' + idx + '\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' + 
+   '</td></tr></table>'; 
+ } 
+ 
+ // Riga 2: Espansione (nome + link) — per tutte le categorie 
+ var riga2esp = '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' + 
+  '<td style="width:50%; padding-right:6px; vertical-align:bottom;">' + inputText(categoria+'-exp-nome-'+idx,'Nome espansione','Es. Caccia al Tesoro') + '</td>' + 
+  '<td style="width:50%; padding-left:6px; vertical-align:bottom;">' + inputText(categoria+'-exp-link-'+idx,'Link espansione','https://...') + '</td>' + 
+  '</tr></table>'; 
+ 
+ div.innerHTML = riga1 + riga2esp; 
+ lista.appendChild(div); 
+} 
+ 
+function costruisciMusica() { 
+ return inputText('campo-musica','Colonna sonora del personaggio (Solo ID Video YouTube)','Es. cjqwwIRnmuQ') + 
+  '<p style="color:#8FBEBA; font-size:0.82em; margin-top:-10px; font-style:italic;">Inserisci SOLO l\'ID della traccia (la parte dopo "https://www.youtube.com/watch?v=" nell\'URL di YouTube)</p>'; 
+} 
+ 
+function costruisciImporta() { 
+ return '<p style="color:#8FBEBA; font-size:0.88em; margin-bottom:12px; font-style:italic;"><i class="fa-solid fa-circle-info"></i> Incolla il codice HTML della tua scheda esistente e premi "Importa Dati": i campi verranno popolati automaticamente. Potrai poi modificarli prima di generare.</p>' + 
+  '<label style="' + STILE_LABEL + '">Codice HTML della scheda esistente:</label>' + 
+  '<textarea id="campo-importa" placeholder="Incolla il codice HTML della tua scheda..." rows="6" style="' + STILE_INPUT + ' font-family:\'Courier New\',monospace; font-size:0.82em; resize:vertical;"></textarea>' + 
+  '<button onclick="importaScheda()" style="margin-top:10px; background:#292354; color:#8FBEBA; border:1px solid #3B8686; padding:10px 25px; border-radius:6px; cursor:pointer; font-family:\'Montserrat\';"><i class="fa-solid fa-file-import"></i> Importa Dati</button>'; 
+} 
+ 
+// ============================================================ 
+// LOGICA RAZZA / SPECIE 
+// ============================================================ 
+function aggiornaRazza(isNuova) { 
+ var razzaEl = document.getElementById('campo-razza'); 
+ var specieEl = document.getElementById('campo-specie'); 
+ if (!razzaEl) return; 
+ var razza = razzaEl.value; 
+ var isBestia = razza === 'Bestia Demoniaca'; 
+ var specie = specieEl ? specieEl.value : ''; 
+ 
+ // Mostra/nascondi specie e dati relativi 
+ var spWrap = document.getElementById('campo-specie-wrap'); 
+ var rankWrap = document.getElementById('campo-rank-wrap'); 
+ if (spWrap) spWrap.style.display = isBestia ? '' : 'none'; 
+ if (rankWrap) rankWrap.style.display = isBestia ? '' : 'none'; 
+ 
+ // Aggiorna rank e conservazione 
+ if (isBestia && DATI_SPECIE[specie]) { 
+  var ds = DATI_SPECIE[specie]; 
+  var rv = document.getElementById('campo-rank-val'); 
+  var cv = document.getElementById('campo-conservazione-val'); 
+  if (rv) rv.textContent = ds.rank; 
+  if (cv) cv.textContent = ds.conservazione; 
+ } 
+ 
+ // Aggiorna menù luoghi 
+ var luogoEl = document.getElementById('campo-luogo'); 
+ if (luogoEl) { 
+  var luogoCorrente = luogoEl.value; 
+  luogoEl['inn'+'erHTML'] = ''; 
+  var luoghiConsentiti, luoghiVietati; 
+  if (!isBestia) { 
+   // Umano: vede tutti, ma può selezionare solo luoghi umani 
+   luoghiConsentiti = LUOGHI_UMANI; 
+   luoghiVietati = []; 
+   // Raccoglie tutti i luoghi bestia per metterli disabilitati 
+   var vistiB = {}; 
+   for (var sp2 in LUOGHI_BESTIA) { 
+    var ll2 = LUOGHI_BESTIA[sp2]; 
+    for (var j2 = 0; j2 < ll2.length; j2++) { 
+     if (!BONUS_LUOGO[ll2[j2]] && !vistiB[ll2[j2]]) { 
+      luoghiVietati.push(ll2[j2]); 
+      vistiB[ll2[j2]] = true; 
+     } 
+    } 
+   } 
+   for (var li = 0; li < LUOGHI_UMANI.length; li++) { 
+    var opt = document.createElement('option'); 
+    opt.value = LUOGHI_UMANI[li]; opt.text = LUOGHI_UMANI[li]; 
+    luogoEl['append'+'Child'](opt); 
+   } 
+   for (var li2 = 0; li2 < luoghiVietati.length; li2++) { 
+    var opt2 = document.createElement('option'); 
+    opt2.value = luoghiVietati[li2]; opt2.text = luoghiVietati[li2]; 
+    opt2.disabled = true; 
+    luogoEl['append'+'Child'](opt2); 
+   } 
+  } else { 
+   // Bestia Demoniaca: vede tutti, ma può selezionare solo i luoghi della sua specie 
+   var luoghiSpecie = specie && LUOGHI_BESTIA[specie] ? LUOGHI_BESTIA[specie] : []; 
+   for (var li3 = 0; li3 < LUOGHI_TUTTI.length; li3++) { 
+    var opt3 = document.createElement('option'); 
+    opt3.value = LUOGHI_TUTTI[li3]; opt3.text = LUOGHI_TUTTI[li3]; 
+    var consentito = luoghiSpecie.indexOf(LUOGHI_TUTTI[li3]) !== -1; 
+    if (!consentito) opt3.disabled = true; 
+    luogoEl['append'+'Child'](opt3); 
+   } 
+   // Seleziona il primo luogo consentito 
+   if (luoghiSpecie.length > 0) { 
+    for (var oi = 0; oi < luogoEl.options.length; oi++) { 
+     if (!luogoEl.options[oi].disabled) { luogoEl.selectedIndex = oi; break; } 
+    } 
+   } 
+  } 
+  // Tenta di ripristinare il valore precedente se ancora valido 
+  if (luogoCorrente) { 
+   for (var oi2 = 0; oi2 < luogoEl.options.length; oi2++) { 
+    if (luogoEl.options[oi2].value === luogoCorrente && !luogoEl.options[oi2].disabled) { 
+     luogoEl.selectedIndex = oi2; break; 
+    } 
+   } 
+  } 
+ } 
+ 
+ // Aggiorna menù classe 
+ var classeWrap = document.getElementById('campo-classe-wrap'); 
+ var classeEl = document.getElementById('campo-classe'); 
+ if (classeWrap) classeWrap.style.display = isBestia ? 'none' : ''; 
+ if (classeEl && !isBestia) { 
+  // Ricostruisce opzioni classi (filtra disabilitate se isNuova) 
+  var classiDaMostrare = isNuova ? CLASSI : CLASSI_TUTTE; 
+  classeEl['inn'+'erHTML'] = ''; 
+  for (var ci = 0; ci < classiDaMostrare.length; ci++) { 
+   var optC = document.createElement('option'); 
+   optC.value = classiDaMostrare[ci]; optC.text = classiDaMostrare[ci]; 
+   classeEl['append'+'Child'](optC); 
+  } 
+ } 
+ 
+ // Fedina penale 
+ aggiornaFedina(isNuova); 
+ 
+ // Aggiorna stat se scheda nuova 
+ if (isNuova) aggiornaStatNuova(); 
+} 
+ 
+function aggiornaFedina(isNuova) { 
+ var razzaEl = document.getElementById('campo-razza'); 
+ var specieEl = document.getElementById('campo-specie'); 
+ if (!razzaEl) return; 
+ var isBestia = razzaEl.value === 'Bestia Demoniaca'; 
+ var specie = specieEl ? specieEl.value : ''; 
+ var tagliaWrap = document.getElementById('campo-taglia-wrap'); 
+ 
+ if (isNuova) { 
+  // Readonly: calcola automaticamente 
+  var fedina = 'Incensurato'; 
+  if (isBestia && DATI_SPECIE[specie]) fedina = DATI_SPECIE[specie].fedina; 
+  var fv = document.getElementById('campo-fedina-val'); 
+  if (fv) fv.textContent = fedina; 
+  if (tagliaWrap) tagliaWrap.style.display = fedina === 'Ricercato' ? '' : 'none'; 
+ } else { 
+  var feEl = document.getElementById('campo-fedina'); 
+  if (!feEl) return; 
+  // Forza "Ricercato" se bestia rank A/B/C 
+  if (isBestia && DATI_SPECIE[specie] && ['A','B','C'].indexOf(DATI_SPECIE[specie].rank) !== -1) { 
+   feEl.value = 'Ricercato'; 
+   feEl.disabled = true; 
+  } else { 
+   feEl.disabled = false; 
+  } 
+  if (tagliaWrap) tagliaWrap.style.display = feEl.value === 'Ricercato' ? '' : 'none'; 
+ } 
+} 
+ 
+function aggiornaTaglia() { 
+ var ctEl = document.getElementById('campo-classtaglia'); 
+ var vtEl = document.getElementById('campo-valtaglia'); 
+ if (!ctEl || !vtEl) return; 
+ var classe = ctEl.value; 
+ var min = VALORE_TAGLIA_BASE[classe] || 1000; 
+ var attuale = parseInt(vtEl.value.replace(/\./g,'').replace(/,/g,'')) || 0; 
+ if (attuale < min) vtEl.value = min.toLocaleString(); 
+} 
+ 
+// ============================================================ 
+// LOGICA STATISTICHE 
+// ============================================================ 
+function aggiornaStatNuova() { 
+ var luogoEl = document.getElementById('campo-luogo'); 
+ var classeEl = document.getElementById('campo-classe'); 
+ var razzaEl = document.getElementById('campo-razza'); 
+ if (!luogoEl) return; 
+ var luogo = luogoEl.value; 
+ var classe = classeEl ? classeEl.value : ''; 
+ var isBestia = razzaEl && razzaEl.value === 'Bestia Demoniaca'; 
+ var specieEl = document.getElementById('campo-specie'); 
+ var specie = specieEl ? specieEl.value : ''; 
+ var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna']; 
+ var stat = {}; 
+ for (var i = 0; i < ls.length; i++) stat[ls[i]] = STAT_BASE[ls[i]]; 
+ stat.vita = STAT_BASE.vita; stat.aura = STAT_BASE.aura; 
+ // Formichimera Umana usa luoghi umani ma senza bonus 
+ var applicaBonus = !isBestia || specie === ''; 
+ var isFormichimera = isBestia && specie === 'Formichimera Umana'; 
+ if (applicaBonus && !isFormichimera && BONUS_LUOGO[luogo]) { 
+  var bl = BONUS_LUOGO[luogo]; 
+  for (var k in bl) if (stat[k] !== undefined) stat[k] += bl[k]; 
+ } 
+ if (!isBestia && BONUS_CLASSE[classe]) { 
+  var bc = BONUS_CLASSE[classe]; 
+  for (var m in bc) if (stat[m] !== undefined) stat[m] += bc[m]; 
+ } 
+ // Salva i valori base (bonus inclusi) e aggiorna i display 
+ for (var s in stat) { 
+  var el = document.getElementById('stat-base-'+s); 
+  if (el) el.textContent = stat[s]; 
+  var elTot = document.getElementById('stat-'+s); 
+  if (elTot) elTot.textContent = stat[s]; 
+ } 
+ // Resetta i punti extra a 0 
+ for (var pi = 0; pi < ls.length; pi++) { 
+  var eExtra = document.getElementById('stat-extra-'+ls[pi]); 
+  if (eExtra) eExtra.value = 0; 
+ } 
+ aggiornaContatoreExtra(); 
+} 
+ 
+var PUNTI_EXTRA_TOTALI = 25; 
+ 
+function aggiornaContatoreExtra() { 
+ var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna']; 
+ var usati = 0; 
+ for (var i = 0; i < ls.length; i++) { 
+  var eExtra = document.getElementById('stat-extra-'+ls[i]); 
+  if (eExtra) usati += parseInt(eExtra.value) || 0; 
+ } 
+ var rimasti = PUNTI_EXTRA_TOTALI - usati; 
+ var cEl = document.getElementById('punti-extra-counter'); 
+ if (cEl) { 
+  cEl.textContent = rimasti + ' punti rimanenti'; 
+  cEl.style.color = rimasti < 0 ? '#F9C6C6' : (rimasti === 0 ? '#CFF09E' : '#8FBEBA'); 
+ } 
+ return rimasti; 
+} 
+ 
+function modificaStatExtra(sId, delta) { 
+ var eExtra = document.getElementById('stat-extra-'+sId); 
+ var eBase  = document.getElementById('stat-base-'+sId); 
+ var eTot   = document.getElementById('stat-'+sId); 
+ if (!eExtra || !eBase || !eTot) return; 
+ var rimasti = aggiornaContatoreExtra(); 
+ var nuovoExtra = (parseInt(eExtra.value) || 0) + delta; 
+ if (nuovoExtra < 0) nuovoExtra = 0; 
+ if (delta > 0 && rimasti <= 0) { 
+  alert('Hai già distribuito tutti i 25 punti extra!'); 
+  return; 
+ } 
+ eExtra.value = nuovoExtra; 
+ var base = parseInt(eBase.textContent) || 5; 
+ eTot.textContent = base + nuovoExtra; 
+ aggiornaContatoreExtra(); 
+} 
+ 
+function validaStat(input, isVitaAura) { 
+ var val = parseInt(input.value); 
+ var step = isVitaAura ? 100 : 5; 
+ var min = isVitaAura ? (input.id==='stat-vita' ? 300 : 500) : 5; 
+ var max = isVitaAura ? (input.id==='stat-vita' ? 3000 : 5000) : 250; 
+ if (!isVitaAura) { var idS = input.id.replace('stat-',''); var ov = document.getElementById('over-'+idS); if (ov && ov.checked) max = 400; } 
+ if (isNaN(val)||val<min) val=min; 
+ if (val>max) val=max; 
+ input.value = Math.round(val/step)*step; 
+} 
+ 
+function toggleOver(checkbox, sId) { 
+ var input = document.getElementById('stat-'+sId); 
+ if (!input) return; 
+ if (checkbox.checked) { 
+  // Conta quante over sono già attive (esclusa quella corrente) 
+  var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna']; 
+  var attive = 0; 
+  for (var i = 0; i < ls.length; i++) { 
+   if (ls[i] === sId) continue; 
+   var ov = document.getElementById('over-'+ls[i]); 
+   if (ov && ov.checked) attive++; 
+  } 
+  if (attive >= 2) { 
+   checkbox.checked = false; 
+   alert('Puoi overlivellare al massimo 2 statistiche!'); 
+   return; 
+  } 
+  input.max = 400; 
+ } else { 
+  input.max = 250; 
+  if (parseInt(input.value) > 250) input.value = 250; 
+ } 
+} 
+ 
+function calcolaExpTot(livello) { 
+ var lv = parseInt(livello) || 1; 
+ if (lv <= 14) return 100; 
+ return 100 + (lv - 14) * 10; 
+} 
+ 
+function aggiornaCompetenze() { 
+ var livEl = document.getElementById('campo-livello'); 
+ if (!livEl) return; 
+ var lv = parseInt(livEl.value) || 0; 
+ // Aggiorna EXP per level up (readonly, calcolato dal livello) 
+ var exptotEl = document.getElementById('campo-exptot'); 
+ if (exptotEl) exptotEl.value = calcolaExpTot(lv); 
+ for (var n = 0; n < 5; n++) { 
+  var slot       = document.getElementById('comp-slot-' + n); 
+  var label      = document.getElementById('comp-slot-label-' + n); 
+  var fields     = document.getElementById('comp-slot-fields-' + n); 
+  if (!slot || !label || !fields) continue; 
+  var sbloccato  = lv >= SBLOCCO_COMPETENZE[n]; 
+  // Bordo e sfondo 
+  slot.style.opacity = sbloccato ? '1' : '0.45'; 
+  slot.style.borderColor = sbloccato ? '#3B8686' : '#292354'; 
+  // Icona e testo label 
+  label.innerHTML = sbloccato 
+   ? '<i class="fa-solid fa-lock-open" style="color:#CFF09E;"></i> Slot ' + (n+1) + ' — sbloccato al Lv. ' + SBLOCCO_COMPETENZE[n] 
+   : '<i class="fa-solid fa-lock"></i> Slot ' + (n+1) + ' — sbloccabile al Lv. ' + SBLOCCO_COMPETENZE[n]; 
+  // Abilita / disabilita tutti gli input e textarea dentro il fields 
+  var gbn = 'getElements' + 'ByTagName'; 
+  var inputs = fields[gbn]('input'); 
+  var textareas = fields[gbn]('textarea'); 
+  for (var i = 0; i < inputs.length; i++) { 
+   inputs[i].disabled = !sbloccato; 
+   inputs[i].style.opacity = sbloccato ? '1' : '0.4'; 
+   inputs[i].style.cursor = sbloccato ? '' : 'not-allowed'; 
+  } 
+  for (var j = 0; j < textareas.length; j++) { 
+   textareas[j].disabled = !sbloccato; 
+   textareas[j].style.opacity = sbloccato ? '1' : '0.4'; 
+   textareas[j].style.cursor = sbloccato ? '' : 'not-allowed'; 
+  } 
+ } 
+} 
+ 
+function bbcodeToHtml(testo) { 
+ // [IMG]url[/IMG] → <img src="url"> 
+ testo = testo.replace(/\[IMG\](.*?)\[\/IMG\]/gi, '<img src="$1">'); 
+ // [URL=url]testo[/URL] → <a href="url">testo</a> 
+ testo = testo.replace(/\[URL=(.*?)\](.*?)\[\/URL\]/gi, '<a href="$1">$2</a>'); 
+ // [URL]url[/URL] → <a href="url">url</a> (forma senza testo) 
+ testo = testo.replace(/\[URL\](.*?)\[\/URL\]/gi, '<a href="$1">$1</a>'); 
+ return testo; 
+} 
+ 
+function importaScheda() { 
+ var htmlScheda = document.getElementById('campo-importa').value.trim(); 
+ if (!htmlScheda) { alert('Incolla prima il codice HTML!'); return; } 
+ // Converte BBCode in HTML (ForumFree trasforma img e link in BBCode nei post) 
+ htmlScheda = bbcodeToHtml(htmlScheda); 
+ var temp = document.createElement('div'); 
+ temp.innerHTML = htmlScheda; 
+ var metodo = 'getElements' + 'ByTagName'; 
+ 
+ // ── Helpers ─────────────────────────────────────────────── 
+ function setVal(id, val) { 
+  var e = document.getElementById(id); 
+  if (e && val !== null && val !== undefined && val !== '') e.value = val; 
+ } 
+ function setSelect(id, val) { 
+  var e = document.getElementById(id); 
+  if (!e || !val) return; 
+  val = val.trim(); 
+  for (var i = 0; i < e.options.length; i++) { 
+   if (e.options[i].value === val || e.options[i].text === val) { 
+    e.selectedIndex = i; return; 
+   } 
+  } 
+ } 
+ function setTextarea(id, val) { 
+  var e = document.getElementById(id); 
+  if (e && val) e.value = val; 
+ } 
+ // Restituisce il textContent (per label, confronti) 
+ function trovaEntryDopoLabel(spans, labelTesto) { 
+  for (var i = 0; i < spans.length - 1; i++) { 
+   if (spans[i].className === 'scheda-label' && spans[i].textContent.trim() === labelTesto) { 
+    if (spans[i+1].className === 'scheda-entry') return spans[i+1].textContent.trim(); 
+   } 
+  } 
+  return null; 
+ } 
+ // Restituisce l'innerHTML (per campi che possono contenere tag HTML) 
+ function trovaEntryHTMLDopoLabel(spans, labelTesto) { 
+  for (var i = 0; i < spans.length - 1; i++) { 
+   if (spans[i].className === 'scheda-label' && spans[i].textContent.trim() === labelTesto) { 
+    if (spans[i+1].className === 'scheda-entry') return spans[i+1]['inn'+'erHTML'].trim(); 
+   } 
+  } 
+  return null; 
+ } 
+ // Imposta il valore di un input con innerHTML come valore (per campi con HTML inline) 
+ function setValHTML(id, val) { 
+  var e = document.getElementById(id); 
+  if (e && val !== null && val !== undefined && val !== '') e.value = val; 
+ } 
+ 
+ var spans = temp[metodo]('span'); 
+ var divs  = temp[metodo]('div'); 
+ 
+ // ── Campi testo semplici ─────────────────────────────────── 
+ var mappaLabel = { 
+  'Nome:':     'campo-nome', 
+  'Cognome:':  'campo-cognome', 
+  'Genere:':   'campo-genere', 
+  'Mestiere:': 'campo-mestiere' 
+ }; 
+ for (var i = 0; i < spans.length - 1; i++) { 
+  var lbl = spans[i].textContent.trim(); 
+  if (mappaLabel[lbl] && spans[i+1].className === 'scheda-entry') { 
+   setValHTML(mappaLabel[lbl], spans[i+1]['inn'+'erHTML'].trim()); 
+  } 
+ } 
+ 
+ // ── Select ───────────────────────────────────────────────── 
+ var mappaSelect = { 
+  'Luogo di nascita:':       'campo-luogo', 
+  'Segno zodiacale:':        'campo-segno', 
+  'Segno zodiacale cinese:': 'campo-segnocinese', 
+  'MBTI:':                   'campo-mbti', 
+  'Allineamento:':           'campo-allineamento' 
+ }; 
+ for (var i = 0; i < spans.length - 1; i++) { 
+  var lbl = spans[i].textContent.trim(); 
+  if (mappaSelect[lbl] && spans[i+1].className === 'scheda-entry') { 
+   setSelect(mappaSelect[lbl], spans[i+1].textContent.trim()); 
+  } 
+ } 
+ 
+ // ── Razza, Specie, Fedina, Taglia, Rank, Conservazione ───── 
+ for (var i = 0; i < spans.length - 1; i++) { 
+  if (spans[i].className !== 'scheda-label') continue; 
+  var lbl2 = spans[i].textContent.trim(); 
+  var val2 = spans[i+1].className === 'scheda-entry' ? spans[i+1].textContent.trim() : null; 
+  if (!val2) continue; 
+  if (lbl2 === 'Razza:')                   setSelect('campo-razza', val2); 
+  if (lbl2 === 'Specie:')                  setSelect('campo-specie', val2); 
+  if (lbl2 === 'Fedina Penale:')           setSelect('campo-fedina', val2); 
+  if (lbl2 === 'Classificazione Taglia:')  setSelect('campo-classtaglia', val2); 
+  if (lbl2 === 'Valore Taglia:')           setVal('campo-valtaglia', val2.replace(/\./g,'').replace(/[^\d]/g,'')); 
+  if (lbl2 === 'Classe:')                  setSelect('campo-classe', val2); 
+ } 
+ // Riesegui aggiornaRazza per aggiornare menù luoghi, classe, fedina ecc. 
+ aggiornaRazza(false); 
+ 
+ // ── Data di nascita ──────────────────────────────────────── 
+ var dataRaw = trovaEntryDopoLabel(spans, 'Data di nascita:'); 
+ if (dataRaw && dataRaw !== '—') { 
+  var mesiNomi = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno', 
+   'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']; 
+  var parti = dataRaw.split(' '); 
+  if (parti.length === 3) { 
+   // "15 Marzo 2001" 
+   setSelect('campo-datanascita-g', parti[0]); 
+   setSelect('campo-datanascita-m', parti[1]); 
+   setSelect('campo-datanascita-a', parti[2]); 
+  } else if (parti.length === 2) { 
+   // "15 Marzo" oppure "Marzo 2001" 
+   var primoEMese = mesiNomi.indexOf(parti[0]) !== -1; 
+   if (primoEMese) { 
+    // "Marzo 2001" 
+    setSelect('campo-datanascita-m', parti[0]); 
+    setSelect('campo-datanascita-a', parti[1]); 
+   } else { 
+    // "15 Marzo" 
+    setSelect('campo-datanascita-g', parti[0]); 
+    setSelect('campo-datanascita-m', parti[1]); 
+   } 
+  } else if (parti.length === 1) { 
+   // Solo mese o solo anno 
+   if (mesiNomi.indexOf(parti[0]) !== -1) { 
+    setSelect('campo-datanascita-m', parti[0]); 
+   } else { 
+    setSelect('campo-datanascita-a', parti[0]); 
+   } 
+  } 
+ } 
+ 
+ // ── Classe, Status, Livello dalla riga .dati-pg ───────────── 
+ for (var i = 0; i < divs.length; i++) { 
+  if (divs[i].className === 'dati-pg') { 
+   var testo = divs[i].textContent; 
+   var parti = testo.split('|'); 
+   for (var p = 0; p < parti.length; p++) { 
+    var coppia = parti[p].trim().split(':'); 
+    if (coppia.length >= 2) { 
+     var chiave = coppia[0].trim(); 
+     var valore = coppia.slice(1).join(':').trim(); 
+     if (chiave === 'Classe')  setSelect('campo-classe', valore); 
+     if (chiave === 'Status')  setSelect('campo-status', valore); 
+     if (chiave === 'Livello') setVal('campo-livello', valore); 
+    } 
+   } 
+   break; 
+  } 
+ } 
+ 
+ // ── EXP dalla span .dati-pg2 ─────────────────────────────── 
+ for (var i = 0; i < spans.length; i++) { 
+  if (spans[i].className === 'dati-pg2') { 
+   var t = spans[i].textContent.trim(); 
+   if (t.indexOf('/') !== -1 && t.indexOf('For') !== -1) { 
+    var expParts = t.replace('For Level Up!','').trim().split('/'); 
+    if (expParts.length === 2) { 
+     setVal('campo-exp', expParts[0].replace(/[^\d]/g,'').trim()); 
+    } 
+   } 
+  } 
+ } 
+ 
+ // ── Jenny e HC ───────────────────────────────────────────── 
+ var soldiRaw = trovaEntryDopoLabel(spans, 'Soldi:'); 
+ if (soldiRaw) { 
+  var soldiParts = soldiRaw.split('/'); 
+  if (soldiParts.length >= 2) { 
+   setVal('campo-jenny', soldiParts[0].replace('Jenny','').replace(/\./g,'').replace(/[^\d]/g,'').trim()); 
+   setVal('campo-hc',    soldiParts[1].replace('HC','').replace(/[^\d]/g,'').trim()); 
+  } 
+ } 
+ 
+ // ── Aggettivi ────────────────────────────────────────────── 
+ var aggTrovati = []; 
+ for (var i = 0; i < spans.length; i++) { 
+  if (spans[i].className === 'aggettivo') aggTrovati.push(spans[i]['inn'+'erHTML'].trim()); 
+ } 
+ if (aggTrovati[0]) setValHTML('campo-agg1', aggTrovati[0]); 
+ if (aggTrovati[1]) setValHTML('campo-agg2', aggTrovati[1]); 
+ if (aggTrovati[2]) setValHTML('campo-agg3', aggTrovati[2]); 
+ 
+ // ── Citazione ─────────────────────────────────────────────── 
+ for (var i = 0; i < divs.length; i++) { 
+  if (divs[i].className === 'info-citazione') { 
+   var citSpan = divs[i][metodo]('span'); 
+   if (citSpan.length > 0) setValHTML('campo-citazione', citSpan[0]['inn'+'erHTML'].trim()); 
+   else setValHTML('campo-citazione', divs[i]['inn'+'erHTML'].trim()); 
+   break; 
+  } 
+ } 
+ 
+ // ── Aspetto e Background ─────────────────────────────────── 
+ for (var i = 0; i < spans.length - 1; i++) { 
+  if (spans[i].className === 'scheda-label') { 
+   var lbl = spans[i].textContent.trim(); 
+   if (lbl === 'Aspetto:'    && spans[i+1].className === 'scheda-entry') setTextarea('campo-aspetto',    spans[i+1]['inn'+'erHTML'].trim()); 
+   if (lbl === 'Background:' && spans[i+1].className === 'scheda-entry') setTextarea('campo-background', spans[i+1]['inn'+'erHTML'].trim()); 
+  } 
+ } 
+ 
+ // ── Statistiche ───────────────────────────────────────────── 
+ var mapStat = { 
+  'Forza':'forza','Resistenza':'resistenza','Velocità':'velocita', 
+  'Riflessi':'riflessi','Destrezza':'destrezza','Mira':'mira', 
+  'Intelligenza':'intelligenza','Carisma':'carisma','Istinto':'istinto', 
+  'Fortuna':'fortuna','Vita':'vita','Aura':'aura' 
+ }; 
+ for (var i = 0; i < divs.length; i++) { 
+  var cn = divs[i].className; 
+  if (cn === 'stat-card' || cn === 'stat-card-vitale') { 
+   var labelEl = divs[i].querySelector ? divs[i].querySelector('.stat-label') : null; 
+   var valueEl = divs[i].querySelector ? divs[i].querySelector('.stat-value') : null; 
+   if (labelEl && valueEl) { 
+    var statNome = labelEl.textContent.trim(); 
+    var statVal  = valueEl.textContent.trim().replace(/\./g,'').replace(/,/g,''); 
+    var statId   = mapStat[statNome]; 
+    if (statId) { 
+     var inp = document.getElementById('stat-' + statId); 
+     if (inp) inp.value = statVal; 
+     if (parseInt(statVal) > 250) { 
+      var ov = document.getElementById('over-' + statId); 
+      if (ov) { ov.checked = true; if (inp) inp.max = 400; } 
+     } 
+    } 
+   } 
+  } 
+ } 
+ 
+ // ── Hatsu ─────────────────────────────────────────────────── 
+ for (var i = 0; i < divs.length; i++) { 
+  if (divs[i].className === 'hatsu-card') { 
+   var valEl = divs[i].querySelector ? divs[i].querySelector('.hatsu-card-value') : null; 
+   if (valEl) setSelect('campo-hatsu', valEl.textContent.trim()); 
+   break; 
+  } 
+ } 
+ 
+ // ── Nen e Tenacia ─────────────────────────────────────────── 
+ for (var i = 0; i < divs.length; i++) { 
+  if (divs[i].className === 'barra-card') { 
+   var lblEl = divs[i].querySelector ? divs[i].querySelector('.barra-card-label') : null; 
+   var pctEl = divs[i].querySelector ? divs[i].querySelector('.barra-card-pct') : null; 
+   if (lblEl && pctEl) { 
+    var nome   = lblEl.textContent.trim(); 
+    var valore = pctEl.textContent.replace('%','').trim(); 
+    if (nome === 'Nen')     setVal('campo-nen', valore); 
+    if (nome === 'Tenacia') setVal('campo-tenacia', valore); 
+   } 
+  } 
+ } 
+ 
+ // ── Tecniche Hatsu ────────────────────────────────────────── 
+ for (var i = 0; i < divs.length; i++) { 
+  if (divs[i].className === 'poteri-box') { 
+   var potSpans = divs[i][metodo]('span'); 
+   for (var j = 0; j < potSpans.length - 1; j++) { 
+    if (potSpans[j].className === 'scheda-label' && potSpans[j+1].className === 'scheda-entry') { 
+     var nomeT = potSpans[j].textContent.replace(':','').trim(); 
+     var descT = potSpans[j+1]['inn'+'erHTML'].trim(); 
+     if (nomeT && nomeT !== '—') { 
+      aggiungiTecnica(); 
+      var tIdx = document.getElementById('lista-tecniche').children.length - 1; 
+      setVal('tecnica-nome-' + tIdx, nomeT); 
+      setTextarea('tecnica-desc-' + tIdx, descT); 
+     } 
+    } 
+   } 
+   break; 
+  } 
+ } 
+ 
+ // ── Quest ─────────────────────────────────────────────────── 
+ for (var i = 0; i < spans.length; i++) { 
+  if (spans[i].className === 'scheda-label' && spans[i].textContent.trim() === 'Quest:') { 
+   // Le quest sono span.scheda-entry consecutivi dopo il label 
+   for (var j = i + 1; j < spans.length; j++) { 
+    if (spans[j].className !== 'scheda-entry') break; // fine blocco quest 
+    var anchors = spans[j][metodo]('a'); 
+    for (var a = 0; a < anchors.length; a++) { 
+     aggiungiQuest(); 
+     var qIdx = document.getElementById('lista-quest').children.length - 1; 
+     setVal('quest-nome-' + qIdx, anchors[a].textContent.trim()); 
+     setVal('quest-link-' + qIdx, anchors[a].getAttribute('href') || ''); 
+    } 
+   } 
+   break; 
+  } 
+ } 
+ 
+ // ── Competenze ────────────────────────────────────────────── 
+ var compIdx = 0; 
+ for (var i = 0; i < divs.length && compIdx < 5; i++) { 
+  if (divs[i].className === 'competenza-card bloccata') { compIdx++; continue; } 
+  if (divs[i].className === 'competenza-card') { 
+   var nomeEl = divs[i].querySelector ? divs[i].querySelector('.competenza-nome') : null; 
+   var lvEl   = divs[i].querySelector ? divs[i].querySelector('.competenza-livello') : null; 
+   var descEl = divs[i].querySelector ? divs[i].querySelector('.competenza-desc') : null; 
+   var oggEl  = divs[i].querySelector ? divs[i].querySelector('.competenza-oggetto') : null; 
+   if (nomeEl) setValHTML('comp-nome-'    + compIdx, nomeEl['inn'+'erHTML'].trim()); 
+   if (lvEl)   setVal('comp-lv-'          + compIdx, lvEl.textContent.replace('Lv.','').trim()); 
+   if (descEl) setTextarea('comp-desc-'   + compIdx, descEl['inn'+'erHTML'].trim()); 
+   if (oggEl) { 
+    var oggSpanLabel = oggEl.querySelector ? oggEl.querySelector('.competenza-oggetto-label') : null; 
+    var oggTesto = oggEl.textContent; 
+    if (oggSpanLabel) oggTesto = oggTesto.replace(oggSpanLabel.textContent, '').trim(); 
+    setVal('comp-oggetto-' + compIdx, oggTesto.trim()); 
+   } 
+   compIdx++; 
+  } 
+ } 
+ 
+ // ── Baule ─────────────────────────────────────────────────── 
+ var catMap    = ['armi','equip','oggetti','materiali']; 
+ var catTitoli = ['Armi','Equipaggiamento','Oggetti Extra','Materiali']; 
+ for (var i = 0; i < divs.length; i++) { 
+  if (divs[i].className === 'equip-box') { 
+   var titleEl = divs[i].querySelector ? divs[i].querySelector('.equip-box-title') : null; 
+   if (!titleEl) continue; 
+   var titolo = titleEl.textContent.trim(); 
+   var catIdx = catTitoli.indexOf(titolo); 
+   if (catIdx === -1) continue; 
+   var catId = catMap[catIdx]; 
+   var items = divs[i][metodo]('li'); 
+   for (var li = 0; li < items.length; li++) { 
+    var nameEl = items[li].querySelector ? items[li].querySelector('.equip-item-name') : null; 
+    var infoEl = items[li].querySelector ? items[li].querySelector('.equip-item-info') : null; 
+    if (!nameEl) continue; 
+    aggiungiItem(catId); 
+    var bIdx = document.getElementById('lista-' + catId).children.length - 1; 
+    setVal(catId + '-nome-' + bIdx, nameEl.textContent.trim()); 
+    if (infoEl) { 
+     var infoTesto = infoEl.textContent; 
+     var qtMatch  = infoTesto.match(/Qt:\s*(\S+)/); 
+     if (qtMatch) setVal(catId + '-qt-' + bIdx, qtMatch[1]); 
+     var lvMatch  = infoTesto.match(/Lv\.\s*(\S+)/); 
+     if (lvMatch && catId !== 'oggetti' && catId !== 'materiali') { 
+      var lvVal = parseInt(lvMatch[1]) || 0; 
+      if (lvVal > 5) lvVal = 5; 
+      setVal(catId + '-lv-' + bIdx, lvVal); 
+     } 
+     var usiMatch = infoTesto.match(/Usi:\s*(\S+)/); 
+     if (usiMatch && catId === 'oggetti') setVal(catId + '-usi-' + bIdx, usiMatch[1]); 
+     // Espansione: legge il link se presente, altrimenti il testo 
+     var expAnchor = infoEl.querySelector ? infoEl.querySelector('a') : null; 
+     if (expAnchor) { 
+      setVal(catId + '-exp-nome-' + bIdx, expAnchor.textContent.trim()); 
+      setVal(catId + '-exp-link-' + bIdx, expAnchor.getAttribute('href') || ''); 
+     } 
+    } 
+   } 
+  } 
+ } 
+ 
+ // ── Immagini ─────────────────────────────────────────────── 
+ var imgs = temp[metodo]('img'); 
+ var imgSrcs = []; 
+ for (var i = 0; i < imgs.length; i++) { 
+  var s = imgs[i].getAttribute('src') || ''; 
+  if (s) imgSrcs.push(s); 
+ } 
+ // Ordine nella scheda: [0]=header, [1]=img-dati, [2]=img-info, [3]=img-abilita 
+ if (imgSrcs[0]) setVal('campo-img-laterale', imgSrcs[0]); 
+ if (imgSrcs[1]) setVal('campo-img-dati',     imgSrcs[1]); 
+ if (imgSrcs[2]) setVal('campo-img-info',     imgSrcs[2]); 
+ if (imgSrcs[3]) setVal('campo-img-abilita',  imgSrcs[3]); 
+ 
+ // ── Musica (src iframe YouTube) ──────────────────────────── 
+ var iframes = temp[metodo]('iframe'); 
+ for (var i = 0; i < iframes.length; i++) { 
+  var src = iframes[i].getAttribute('src') || ''; 
+  var match = src.match(/embed\/([^?&]+)/); 
+  if (match) { setVal('campo-musica', match[1]); break; } 
+ } 
+ 
+ // Salva classe e style inline del div radice per "Mantieni attuale" 
+ var radice = temp.firstElementChild; 
+ stato.schedaOriginale = radice; 
+ if (radice) { 
+  stato.classeOriginale = radice.getAttribute('class') || ''; 
+  stato.styleOriginale  = radice.getAttribute('style') || ''; 
+ } 
+ document.getElementById('campo-importa').value = ''; 
+ aggiornaCompetenze(); 
+ alert('Dati importati! Controlla i campi e poi genera la scheda.'); 
+} 
+ 
+function rimuoviElemento(id) { 
+ var el = document.getElementById(id); 
+ if (el && el.parentNode) el.parentNode.removeChild(el); 
+} 
+ 
+// ============================================================ 
+// RACCOLTA DATI DAL FORM 
+// ============================================================ 
+function raccogliDati(isNuova) { 
+ function val(id) { var e=document.getElementById(id); return e?e.value.trim():''; } 
+ 
+ var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna']; 
+ var stat = {}; 
+ for (var i=0;i<ls.length;i++) { 
+  var el = document.getElementById('stat-'+ls[i]); 
+  stat[ls[i]] = el ? (el.textContent||el.value||'5').toString().trim() : '5'; 
+ } 
+ stat.vita = (function(){ var e=document.getElementById('stat-vita'); return e?(e.textContent||e.value||'300').toString().trim():'300'; })(); 
+ stat.aura = (function(){ var e=document.getElementById('stat-aura'); return e?(e.textContent||e.value||'500').toString().trim():'500'; })(); 
+ 
+ var ovSt = []; 
+ if (!isNuova) { 
+  for (var j=0;j<ls.length;j++) { 
+   var ov=document.getElementById('over-'+ls[j]); 
+   if (ov&&ov.checked) ovSt.push(ls[j]); 
+  } 
+ } 
+ 
+ var quest = []; 
+ if (!isNuova) { 
+  var lq = document.getElementById('lista-quest'); 
+  if (lq) { 
+   for (var q=0;q<lq.children.length;q++) { 
+    var qn=document.getElementById('quest-nome-'+q); 
+    var ql=document.getElementById('quest-link-'+q); 
+    if (qn&&ql) quest.push({nome:qn.value.trim(), link:ql.value.trim()}); 
+   } 
+  } 
+ } 
+ 
+ var cats = ['armi','equip','oggetti','materiali']; 
+ var baule = {}; 
+ for (var c=0;c<cats.length;c++) { 
+  baule[cats[c]] = []; 
+  var lb=document.getElementById('lista-'+cats[c]); 
+  if (lb) { 
+   for (var bb=0;bb<lb.children.length;bb++) { 
+    var item={}; 
+    var nE=document.getElementById(cats[c]+'-nome-'+bb); 
+    var qE=document.getElementById(cats[c]+'-qt-'+bb); 
+    item.nome=nE?nE.value.trim():''; 
+    item.qt=qE?qE.value.trim():'1'; 
+    if (cats[c]==='oggetti') { var uE=document.getElementById(cats[c]+'-usi-'+bb); item.usi=uE?uE.value.trim():'0/1'; } 
+    else if (cats[c]!=='materiali') { var lE=document.getElementById(cats[c]+'-lv-'+bb); item.lv=lE?lE.value.trim():'0'; } 
+    var enE=document.getElementById(cats[c]+'-exp-nome-'+bb); 
+    var elE=document.getElementById(cats[c]+'-exp-link-'+bb); 
+    item.expNome=enE?enE.value.trim():''; 
+    item.expLink=elE?elE.value.trim():''; 
+    if (item.nome) baule[cats[c]].push(item); 
+   } 
+  } 
+ } 
+ 
+ var competenze = []; 
+ if (!isNuova) { 
+  for (var k=0;k<5;k++) { 
+   competenze.push({ 
+    nome:val('comp-nome-'+k), lv:val('comp-lv-'+k), 
+    oggetto:val('comp-oggetto-'+k), desc:val('comp-desc-'+k), 
+    sbloccato: !!val('comp-nome-'+k) 
+   }); 
+  } 
+ } 
+ 
+ var isBestia = (function(){ var e=document.getElementById('campo-razza'); return e && e.value==='Bestia Demoniaca'; })(); 
+ var specie = isBestia ? (val('campo-specie')||'') : ''; 
+ var rank = isBestia && DATI_SPECIE[specie] ? DATI_SPECIE[specie].rank : '—'; 
+ var conservazione = isBestia && DATI_SPECIE[specie] ? DATI_SPECIE[specie].conservazione : '—'; 
+ // Fedina: in scheda nuova leggi dal readonly, in modifica dal select 
+ var fedina; 
+ if (isNuova) { 
+  var fv = document.getElementById('campo-fedina-val'); 
+  fedina = fv ? fv.textContent.trim() : 'Incensurato'; 
+ } else { 
+  var fe = document.getElementById('campo-fedina'); 
+  fedina = fe ? fe.value : 'Incensurato'; 
+ } 
+ // Taglia 
+ var classTaglia = '—', valTaglia = '—'; 
+ if (fedina === 'Ricercato') { 
+  if (isNuova) { 
+   var ctv = document.getElementById('campo-classtaglia-val'); 
+   var vtv = document.getElementById('campo-valtaglia-val'); 
+   classTaglia = ctv ? ctv.textContent.trim() : 'E'; 
+   valTaglia   = vtv ? vtv.textContent.trim() : '1.000'; 
+  } else { 
+   var cte = document.getElementById('campo-classtaglia'); 
+   var vte = document.getElementById('campo-valtaglia'); 
+   classTaglia = cte ? cte.value : 'E'; 
+   var vtRaw = vte ? parseInt(vte.value.replace(/\./g,'').replace(/,/g,'').replace(/[^\d]/g,'')) || VALORE_TAGLIA_BASE['E'] : VALORE_TAGLIA_BASE['E']; 
+   var vtMin = VALORE_TAGLIA_BASE[classTaglia] || VALORE_TAGLIA_BASE['E']; 
+   if (vtRaw < vtMin) vtRaw = vtMin; 
+   valTaglia = vtRaw.toLocaleString(); 
+  } 
+ } 
+ 
+ // Cap lv 5 per armi ed equip 
+ for (var ci2=0;ci2<cats.length;ci2++) { 
+  if (cats[ci2]==='oggetti'||cats[ci2]==='materiali') continue; 
+  for (var bi2=0;bi2<baule[cats[ci2]].length;bi2++) { 
+   var lvi = parseInt(baule[cats[ci2]][bi2].lv) || 0; 
+   if (lvi > 5) baule[cats[ci2]][bi2].lv = '5'; 
+  } 
+ } 
+ 
+ return { 
+  nome: nomeVal, 
+  cognome: cognomeVal, 
+  nomecognome: (nomeVal==='—'&&cognomeVal==='—') ? '—' : (nomeVal+' '+cognomeVal).trim(), 
+  genere: val('campo-genere')||'—', 
+  razza: isBestia ? 'Bestia Demoniaca' : 'Umano', 
+  specie: specie, 
+  rank: rank, 
+  conservazione: conservazione, 
+  fedina: fedina, 
+  classTaglia: classTaglia, 
+  valTaglia: valTaglia, 
+  luogo: val('campo-luogo')||'—', 
+  datanascita: leggiData('campo-datanascita'), 
+  segno: val('campo-segno')||'—', 
+  segnocinese: val('campo-segnocinese')||'—', 
+  mbti: val('campo-mbti')||'—', 
+  allineamento: val('campo-allineamento')||'—', 
+  mestiere: val('campo-mestiere')||'—', 
+  classe: isBestia ? '—' : (val('campo-classe')||'—'), 
+  status: isNuova ? 'Nessuno' : (val('campo-status')||'Nessuno'), 
+  livello: isNuova ? LIVELLO_INIZIALE : (val('campo-livello')||'1'), 
+  exp: isNuova ? EXP_INIZIALE : (val('campo-exp')||'0'), 
+  exptot: isNuova ? EXP_MASSIMA : calcolaExpTot(val('campo-livello')||'1'), 
+  jenny: isNuova ? JENNY_INIZIALI : (val('campo-jenny')||'0'), 
+  hc: isNuova ? HC_INIZIALI : (val('campo-hc')||'0'), 
+  imgLaterale: val('campo-img-laterale')||'https://via.placeholder.com/664x184', 
+  imgDati: val('campo-img-dati')||'https://via.placeholder.com/154x429', 
+  imgInfo: val('campo-img-info')||val('campo-img-dati')||'https://via.placeholder.com/154x429', 
+  imgAbilita: val('campo-img-abilita')||'https://via.placeholder.com/154x429', 
+  agg1: val('campo-agg1')||'Aggettivo 1', 
+  agg2: val('campo-agg2')||'Aggettivo 2', 
+  agg3: val('campo-agg3')||'Aggettivo 3', 
+  citazione: val('campo-citazione')||'...', 
+  aspetto: val('campo-aspetto')||'...', 
+  background: val('campo-background')||'...', 
+  hatsu: isNuova ? null : (val('campo-hatsu')||'—'), 
+  nen: isNuova ? NEN_INIZIALE : (val('campo-nen')||'0'), 
+  tenacia: isNuova ? TENACIA_INIZIALE : (val('campo-tenacia')||'10'), 
+  tecniche: (function() { 
+   if (isNuova) return []; 
+   var lt = document.getElementById('lista-tecniche'); 
+   var out = []; 
+   if (lt) { 
+    for (var ti = 0; ti < lt.children.length; ti++) { 
+     var tn = document.getElementById('tecnica-nome-'+ti); 
+     var td2 = document.getElementById('tecnica-desc-'+ti); 
+     if (tn) out.push({ nome: tn.value.trim()||('Tecnica '+(ti+1)), desc: td2?td2.value.trim():'' }); 
+    } 
+   } 
+   return out; 
+  })(), 
+  musica: val('campo-musica')||'', 
+  stat: stat, ovSt: ovSt, quest: quest, baule: baule, competenze: competenze 
+ }; 
+} 
+ 
+// ============================================================ 
+// AGGIORNA HTML SCHEDA (modalità "Mantieni attuale") 
+// Lavora sul DOM dell'originale importato: aggiorna solo i valori 
+// noti lasciando intatti tutti gli style/class inline dell'utente. 
+// ============================================================ 
+function aggiornaHTMLScheda(d) { 
+ // Clona il DOM originale per non alterare stato.schedaOriginale 
+ var root = stato.schedaOriginale.cloneNode(true); 
+ var metodo = 'getElements' + 'ByTagName'; 
+ 
+ // ── Helper ───────────────────────────────────────────────── 
+ function qs(sel)  { return root.querySelector ? root.querySelector(sel) : null; } 
+ function qsa(sel) { return root.querySelectorAll ? root.querySelectorAll(sel) : []; } 
+ // Aggiorna il contenuto di uno span.scheda-entry dopo uno span.scheda-label 
+ // Usa innerHTML per supportare tag HTML inline (es. <del>, <b>, <i>...) 
+ function setEntry(labelTesto, nuovoValore) { 
+  var spans = root[metodo]('span'); 
+  for (var i = 0; i < spans.length - 1; i++) { 
+   if (spans[i].className === 'scheda-label' && spans[i].textContent.trim() === labelTesto) { 
+    if (spans[i+1].className === 'scheda-entry') { 
+     spans[i+1]['inn'+'erHTML'] = nuovoValore; 
+     return; 
+    } 
+   } 
+  } 
+ } 
+ // Aggiorna innerHTML di un elemento trovato con querySelector 
+ function setText(sel, val) { var el = qs(sel); if (el) el['inn'+'erHTML'] = val; } 
+ // Aggiorna src di un img dentro un contenitore trovato con querySelector 
+ function setImg(containerSel, src) { 
+  var c = qs(containerSel); 
+  if (!c) return; 
+  var imgs = c[metodo]('img'); 
+  if (imgs.length > 0) imgs[0].setAttribute('src', src); 
+ } 
+ 
+ // ── Nome / Cognome nel titolo ─────────────────────────────── 
+ setText('.nomecognome', d.nomecognome); 
+ 
+ // ── Immagini ─────────────────────────────────────────────── 
+ setImg('.scheda-img',   d.imgLaterale); 
+ setImg('.img-dati',   d.imgDati); 
+ setImg('.img-info',   d.imgInfo); 
+ setImg('.img-poteri', d.imgAbilita); 
+ 
+ // ── Musica ───────────────────────────────────────────────── 
+ var btn = qs('.custom-player'); 
+ var iframes = root[metodo]('iframe'); 
+ if (d.musica) { 
+  var nuovoSrc = 'https://www.youtube.com/embed/' + d.musica + '?enablejsapi=1'; 
+  if (iframes.length > 0) { 
+   iframes[0].setAttribute('src', nuovoSrc); 
+  } else { 
+   // Non c'era musica: aggiunge il bottone e l'iframe nel container nomecognome 
+   var nc = qs('.container-nomecognome'); 
+   if (nc) { 
+    var newBtn = document.createElement('button'); 
+    newBtn.className = 'custom-player'; 
+    newBtn.innerHTML = '<i class="fa-solid fa-circle-play"></i>'; 
+    var newIframe = document.createElement('iframe'); 
+    newIframe.setAttribute('style','display:none;'); 
+    newIframe.setAttribute('src', nuovoSrc); 
+    newIframe.setAttribute('frameborder','0'); 
+    newIframe.setAttribute('allow','autoplay; encrypted-media'); 
+    nc.insertBefore(newIframe, nc.firstChild); 
+    nc.insertBefore(newBtn,    nc.firstChild); 
+   } 
+  } 
+ } else { 
+  // Rimuove musica se vuota 
+  if (btn && btn.parentNode) btn.parentNode.removeChild(btn); 
+  if (iframes.length > 0 && iframes[0].parentNode) iframes[0].parentNode.removeChild(iframes[0]); 
+ } 
+ 
+ // ── Riga dati-pg (Classe / Status / Livello) ─────────────── 
+ var datiPg = qs('.dati-pg'); 
+ if (datiPg) { 
+  datiPg.innerHTML = '<span>Classe:</span> <span>'+(d.classe !== '—' ? d.classe : 'N/D')+'</span> | <span>Status:</span> <span>'+d.status+'</span> | <span>Livello:</span> <span>'+d.livello+'</span>'; 
+ } 
+ 
+ // ── Barra EXP ────────────────────────────────────────────── 
+ var expPct = Math.round((parseInt(d.exp) / parseInt(d.exptot)) * 100) || 0; 
+ var barraExp = qs('.barra-exp'); 
+ if (barraExp) barraExp.style.width = expPct + '%'; 
+ var datiPg2 = root[metodo]('span'); 
+ for (var i = 0; i < datiPg2.length; i++) { 
+  if (datiPg2[i].className === 'dati-pg2' && datiPg2[i].textContent.indexOf('For Level Up') !== -1) { 
+   datiPg2[i].innerHTML = '<b>'+d.exp+'/'+d.exptot+'</b> For Level Up!'; 
+   break; 
+  } 
+ } 
+ 
+ // ── Dati personali (scheda-entry dopo scheda-label) ───────── 
+ setEntry('Nome:',                  d.nome); 
+ setEntry('Cognome:',               d.cognome); 
+ setEntry('Genere:',                d.genere); 
+ setEntry('Razza:',                 d.razza); 
+ if (d.specie)         setEntry('Specie:',                 d.specie); 
+ if (d.rank && d.rank !== '—') setEntry('Rank di Pericolosità:', d.rank); 
+ if (d.conservazione && d.conservazione !== '—') setEntry('Stato di Conservazione:', d.conservazione); 
+ setEntry('Luogo di nascita:',      d.luogo); 
+ setEntry('Data di nascita:',       d.datanascita); 
+ setEntry('Segno zodiacale:',       d.segno); 
+ setEntry('Segno zodiacale cinese:',d.segnocinese); 
+ setEntry('MBTI:',                  d.mbti); 
+ setEntry('Allineamento:',          d.allineamento); 
+ setEntry('Mestiere:',              d.mestiere); 
+ setEntry('Fedina Penale:',         d.fedina); 
+ if (d.fedina === 'Ricercato') { 
+  setEntry('Classificazione Taglia:', d.classTaglia); 
+  setEntry('Valore Taglia:',          d.valTaglia + ' Jenny'); 
+ } 
+ setEntry('Soldi:', d.jenny.toLocaleString() + ' Jenny / ' + d.hc + ' HC'); 
+ 
+ // ── Quest ─────────────────────────────────────────────────── 
+ // Rimuove tutti gli span.scheda-entry delle quest esistenti 
+ var allSpans = root[metodo]('span'); 
+ var questLabelIdx = -1; 
+ for (var i = 0; i < allSpans.length; i++) { 
+  if (allSpans[i].className === 'scheda-label' && allSpans[i].textContent.trim() === 'Quest:') { 
+   questLabelIdx = i; break; 
+  } 
+ } 
+ if (questLabelIdx !== -1) { 
+  var questLabel = allSpans[questLabelIdx]; 
+  var parent = questLabel.parentNode; 
+  // Rimuove i nodi (span.scheda-entry + eventuali nodi testo \n) dopo il label 
+  var toRemove = []; 
+  var node = questLabel.nextSibling; 
+  while (node) { 
+   var next = node.nextSibling; 
+   if (node.nodeType === 1 && node.className === 'scheda-entry') toRemove.push(node); 
+   else if (node.nodeType === 3) toRemove.push(node); // nodo testo (\n) 
+   else break; 
+   node = next; 
+  } 
+  for (var r = 0; r < toRemove.length; r++) parent.removeChild(toRemove[r]); 
+  // Inserisce le quest aggiornate 
+  if (d.quest.length > 0) { 
+   var ref = questLabel.nextSibling; 
+   for (var q = 0; q < d.quest.length; q++) { 
+    var sp = document.createElement('span'); 
+    sp.className = 'scheda-entry'; 
+    sp.innerHTML = '- <a href="'+d.quest[q].link+'">'+(d.quest[q].nome||'Link quest')+'</a>'; 
+    parent.insertBefore(sp, ref); 
+    var tn = document.createTextNode('\n'); 
+    parent.insertBefore(tn, ref); 
+   } 
+  } else { 
+   var sp = document.createElement('span'); 
+   sp.className = 'scheda-entry'; 
+   sp.textContent = '—'; 
+   parent.insertBefore(sp, questLabel.nextSibling); 
+  } 
+ } 
+ 
+ // ── Aggettivi ─────────────────────────────────────────────── 
+ var aggs = qsa('.aggettivo'); 
+ if (aggs[0]) aggs[0].textContent = d.agg1; 
+ if (aggs[1]) aggs[1].textContent = d.agg2; 
+ if (aggs[2]) aggs[2].textContent = d.agg3; 
+ 
+ // ── Citazione ─────────────────────────────────────────────── 
+ var citDiv = qs('.info-citazione'); 
+ if (citDiv) { 
+  var citSpan = citDiv[metodo]('span'); 
+  if (citSpan.length > 0) citSpan[0].textContent = d.citazione; 
+  else citDiv.textContent = d.citazione; 
+ } 
+ 
+ // ── Aspetto / Background ─────────────────────────────────── 
+ setEntry('Aspetto:',    d.aspetto); 
+ setEntry('Background:', d.background); 
+ 
+ // ── Statistiche (.stat-card e .stat-card-vitale) ──────────── 
+ var mapStat = { 
+  'Forza':'forza','Resistenza':'resistenza','Velocità':'velocita', 
+  'Riflessi':'riflessi','Destrezza':'destrezza','Mira':'mira', 
+  'Intelligenza':'intelligenza','Carisma':'carisma','Istinto':'istinto', 
+  'Fortuna':'fortuna','Vita':'vita','Aura':'aura' 
+ }; 
+ var statCards = root[metodo]('div'); 
+ for (var i = 0; i < statCards.length; i++) { 
+  var cn = statCards[i].className; 
+  if (cn === 'stat-card' || cn === 'stat-card-vitale') { 
+   var lbl = statCards[i].querySelector ? statCards[i].querySelector('.stat-label') : null; 
+   var val = statCards[i].querySelector ? statCards[i].querySelector('.stat-value') : null; 
+   if (lbl && val) { 
+    var sid = mapStat[lbl.textContent.trim().replace(' over','')]; 
+    if (sid) { 
+     var newVal = sid === 'vita' || sid === 'aura' 
+      ? parseInt(d.stat[sid]).toLocaleString() 
+      : d.stat[sid]; 
+     val.textContent = newVal; 
+     // gestione classe over sul label 
+     var isOver = d.ovSt && d.ovSt.indexOf(sid) !== -1; 
+     lbl.className = 'stat-label' + (isOver ? ' over' : ''); 
+    } 
+   } 
+  } 
+ } 
+ 
+ // ── Competenze ────────────────────────────────────────────── 
+ var compGrid = qs('.competenze-grid'); 
+ if (compGrid) { 
+  var ls2 = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna']; 
+  var nuovoComp = ''; 
+  for (var t = 0; t < 5; t++) { 
+   var comp = d.competenze[t]; 
+   if (comp && comp.sbloccato) { 
+    nuovoComp += '<div class="competenza-card"><div class="competenza-header"><span class="competenza-nome">'+comp.nome+'</span><span class="competenza-livello">Lv. '+(comp.lv||'1')+'</span></div><div class="competenza-desc">'+comp.desc+'</div><div class="competenza-oggetto"><span class="competenza-oggetto-label">Oggetto:</span> '+(comp.oggetto||'—')+'</div></div>'; 
+   } else { 
+    nuovoComp += '<div class="competenza-card bloccata"><div class="competenza-bloccata-label"><i class="fa-solid fa-lock"></i> Slot bloccato — sbloccabile al Lv. '+SBLOCCO_COMPETENZE[t]+'</div></div>'; 
+   } 
+  } 
+  compGrid.innerHTML = nuovoComp; 
+ } 
+ 
+ // ── Hatsu / Nen / Tenacia ─────────────────────────────────── 
+ setText('.hatsu-card-value', d.hatsu || '—'); 
+ var barreCards = root[metodo]('div'); 
+ for (var i = 0; i < barreCards.length; i++) { 
+  if (barreCards[i].className === 'barra-card') { 
+   var lblEl = barreCards[i].querySelector ? barreCards[i].querySelector('.barra-card-label') : null; 
+   var pctEl = barreCards[i].querySelector ? barreCards[i].querySelector('.barra-card-pct') : null; 
+   var barEl = barreCards[i].querySelector ? barreCards[i].querySelector('.bc-barra') : null; 
+   if (lblEl && pctEl) { 
+    var nome = lblEl.textContent.trim(); 
+    var pct = nome === 'Nen' ? d.nen : (nome === 'Tenacia' ? d.tenacia : null); 
+    if (pct !== null) { 
+     pctEl.textContent = pct + '%'; 
+     if (barEl) barEl.style.width = pct + '%'; 
+    } 
+   } 
+  } 
+ } 
+ 
+ // ── Tecniche Hatsu ────────────────────────────────────────── 
+ var potieriBox = qs('.poteri-box'); 
+ if (potieriBox) { 
+  var nuovoPoteri = ''; 
+  if (d.tecniche && d.tecniche.length > 0) { 
+   for (var ti = 0; ti < d.tecniche.length; ti++) { 
+    nuovoPoteri += '<span class="scheda-label">'+d.tecniche[ti].nome+':</span> <span class="scheda-entry">'+(d.tecniche[ti].desc||'—')+'</span>\n\n'; 
+   } 
+  } else { 
+   nuovoPoteri = '<span class="scheda-entry">—</span>'; 
+  } 
+  potieriBox.innerHTML = nuovoPoteri; 
+ } 
+ 
+ // ── Baule ─────────────────────────────────────────────────── 
+ var catMap    = ['armi','equip','oggetti','materiali']; 
+ var catTitoli = ['Armi','Equipaggiamento','Oggetti Extra','Materiali']; 
+ var equipBoxes = root[metodo]('div'); 
+ for (var i = 0; i < equipBoxes.length; i++) { 
+  if (equipBoxes[i].className === 'equip-box') { 
+   var titleEl = equipBoxes[i].querySelector ? equipBoxes[i].querySelector('.equip-box-title') : null; 
+   if (!titleEl) continue; 
+   var catIdx = catTitoli.indexOf(titleEl.textContent.trim()); 
+   if (catIdx === -1) continue; 
+   var catId = catMap[catIdx]; 
+   var tipo  = catId; 
+   var items = d.baule[catId]; 
+   var nuovoLi = ''; 
+   if (items && items.length > 0) { 
+    for (var x = 0; x < items.length; x++) { 
+     var itm = items[x]; 
+     var expNome = itm.expNome || ''; 
+     var expLink = itm.expLink || ''; 
+     var expTag  = expLink ? '<a href="'+expLink+'">'+expNome+'</a>' : expNome; 
+     var hasExp  = !!(expNome || expLink); 
+     var info = 'Qt: '+(itm.qt||'1'); 
+     if (tipo==='armi'||tipo==='equip') info += ' · Lv. '+(itm.lv||'0') + (hasExp ? ' · Espansione: '+expTag : ''); 
+     if (tipo==='oggetti')              info += ' · Usi: '+(itm.usi||'0/1') + (hasExp ? ' · Espansione: '+expTag : ''); 
+     if (tipo==='materiali' && hasExp)  info += ' · Espansione: '+expTag; 
+     nuovoLi += '<li><span class="equip-item-name">'+itm.nome+'</span> <span class="equip-item-info">'+info+'</span></li>'; 
+    } 
+   } 
+   var bodyEl = equipBoxes[i].querySelector ? equipBoxes[i].querySelector('.equip-box-body') : null; 
+   if (bodyEl) bodyEl.innerHTML = '<ul>'+nuovoLi+'</ul>'; 
+  } 
+ } 
+ 
+ // Restituisce l'HTML serializzato del DOM aggiornato 
+ return root.outerHTML; 
+} 
+ 
+// ============================================================ 
+// GENERA SCHEDA 
+// ============================================================ 
+function generaScheda() { 
+ var isNuova = stato.modalita === 'nuova'; 
+ // Validazione punti extra per schede nuove 
+ if (isNuova) { 
+  var rimasti = aggiornaContatoreExtra(); 
+  if (rimasti > 0) { 
+   alert('Devi ancora distribuire ' + rimasti + ' punti extra nelle statistiche!'); 
+   return; 
+  } 
+ } 
+ var mantieni = stato.palette === 'mantieni'; 
+ var classeContenitore = mantieni ? '' : (stato.palette || 'scheda-darknight'); 
+ var classeOriginale = mantieni ? (stato.classeOriginale || '') : ''; 
+ var styleOriginale  = mantieni ? (stato.styleOriginale  || '') : ''; 
+ var d = raccogliDati(isNuova); 
+ 
+ var htmlScheda, htmlAnteprima; 
+ if (mantieni && stato.schedaOriginale) { 
+  // Modalità mantieni: aggiorna chirurgicamente il DOM originale 
+  htmlScheda = aggiornaHTMLScheda(d); 
+  // Per l'anteprima sostituisce \n con <br> 
+  htmlAnteprima = htmlScheda.replace(/\\n/g, '<br>').replace(/\n(?=<span)/g, '<br>'); 
+ } else { 
+  htmlScheda    = costruisciHTMLScheda(d, isNuova, classeContenitore, classeOriginale, styleOriginale); 
+  htmlAnteprima = costruisciHTMLAnteprimaScheda(d, isNuova, classeContenitore, classeOriginale, styleOriginale); 
+ } 
+ 
+ document.getElementById('anteprima-scheda').innerHTML = htmlAnteprima; 
+ document.getElementById('codice-html').textContent = htmlScheda; 
+ document.getElementById('sezione-output').style.display = 'block'; 
+ document.getElementById('sezione-output').scrollIntoView({ behavior:'smooth' }); 
+} 
+ 
+// ============================================================ 
+// HTML SCHEDA 
+// ============================================================ 
+function costruisciHTMLScheda(d, isNuova, classeContenitore, classeOriginale, styleOriginale) { 
+ var expPct = Math.round((parseInt(d.exp) / parseInt(d.exptot)) * 100) || 0; 
+ // Costruisce l'attributo del div radice: 
+ // - se classeOriginale è valorizzato (modalità mantieni), usa quello + eventuale style originale 
+ // - altrimenti usa classeContenitore normale 
+ var divApri; 
+ if (classeOriginale) { 
+  divApri = '<div class="' + classeOriginale + '"' + (styleOriginale ? ' style="' + styleOriginale + '"' : '') + '>'; 
+ } else if (classeContenitore) { 
+  divApri = '<div class="' + classeContenitore + '">'; 
+ } else { 
+  divApri = '<div>'; 
+ } 
+ 
+ var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna']; 
+ var nomiStat = ['Forza','Resistenza','Velocità','Riflessi','Destrezza','Mira','Intelligenza','Carisma','Istinto','Fortuna']; 
+ 
+ var htmlStats = ''; 
+ for (var i=0;i<ls.length;i++) { 
+  var isOver = d.ovSt && d.ovSt.indexOf(ls[i])!==-1; 
+  htmlStats += '<div class="stat-card"><span class="stat-label' + (isOver?' over':'') + '">' + nomiStat[i] + '</span><span class="stat-value">' + d.stat[ls[i]] + '</span></div>'; 
+ } 
+ 
+ var htmlComp = ''; 
+ if (isNuova) { 
+  for (var s=0;s<5;s++) htmlComp += '<div class="competenza-card bloccata"><div class="competenza-bloccata-label"><i class="fa-solid fa-lock"></i> Slot bloccato — sbloccabile al Lv. '+SBLOCCO_COMPETENZE[s]+'</div></div>'; 
+ } else { 
+  for (var t=0;t<5;t++) { 
+   var comp=d.competenze[t]; 
+   if (comp&&comp.sbloccato) { 
+    htmlComp += '<div class="competenza-card"><div class="competenza-header"><span class="competenza-nome">'+comp.nome+'</span><span class="competenza-livello">Lv. '+(comp.lv||'1')+'</span></div><div class="competenza-desc">'+comp.desc+'</div><div class="competenza-oggetto"><span class="competenza-oggetto-label">Oggetto:</span> '+(comp.oggetto||'—')+'</div></div>'; 
+   } else { 
+    htmlComp += '<div class="competenza-card bloccata"><div class="competenza-bloccata-label"><i class="fa-solid fa-lock"></i> Slot bloccato — sbloccabile al Lv. '+SBLOCCO_COMPETENZE[t]+'</div></div>'; 
+   } 
+  } 
+ } 
+ 
+ var htmlQuest = ''; 
+ if (!isNuova && d.quest.length > 0) { 
+  for (var q=0;q<d.quest.length;q++) { 
+   htmlQuest += '<span class="scheda-entry">- <a href="'+d.quest[q].link+'">'+(d.quest[q].nome||'Link quest')+'</a></span>\n'; 
+  } 
+ } 
+ 
+ function htmlBauleCategoria(titolo, items, tipo) { 
+  var li = ''; 
+  if (items&&items.length>0) { 
+   for (var x=0;x<items.length;x++) { 
+    var itm=items[x]; 
+    var expNome = itm.expNome || ''; 
+    var expLink = itm.expLink || ''; 
+    var expTag = expLink ? '<a href="'+expLink+'">'+expNome+'</a>' : expNome; 
+    var hasExp = !!(expNome || expLink); 
+    var info='Qt: '+(itm.qt||'1'); 
+    if (tipo==='armi'||tipo==='equip') info+=' · Lv. '+(itm.lv||'0') + (hasExp ? ' · Espansione: '+expTag : ''); 
+    if (tipo==='oggetti') info+=' · Usi: '+(itm.usi||'0/1') + (hasExp ? ' · Espansione: '+expTag : ''); 
+    if (tipo==='materiali' && hasExp) info+=' · Espansione: '+expTag; 
+    li+='<li><span class="equip-item-name">'+itm.nome+'</span> <span class="equip-item-info">'+info+'</span></li>'; 
+   } 
+  } 
+  return '<div class="equip-box"><div class="equip-box-header"><span class="equip-box-title">'+titolo+'</span></div><div class="equip-box-body"><ul>'+li+'</ul></div></div>'; 
+ } 
+ 
+ var htmlNen = ''; 
+ if (isNuova) { 
+  htmlNen = '<div class="hatsu-card"><div><span class="hatsu-card-label">Hatsu</span><span class="hatsu-card-value">Non ancora sbloccato</span></div><i class="mdi mdi-fire hatsu-card-icon"></i></div>' + 
+   '<div class="barre-row">' + 
+   '<div class="barra-card"><div class="barra-card-header"><span class="barra-card-label">Nen</span><span class="barra-card-pct">'+NEN_INIZIALE+'%</span></div><div class="bc-container"><div class="bc-barra bc-nen barra-pg" style="width:'+NEN_INIZIALE+'%;"></div></div></div>' + 
+   '<div class="barra-card"><div class="barra-card-header"><span class="barra-card-label">Tenacia</span><span class="barra-card-pct">'+TENACIA_INIZIALE+'%</span></div><div class="bc-container"><div class="bc-barra bc-tenacia barra-pg" style="width:'+TENACIA_INIZIALE+'%;"></div></div></div>' + 
+   '</div>' + 
+   '<div class="titolo-poteri-box">POTERE NEN</div>' + 
+   '<div class="poteri-box"><span class="scheda-entry">—</span></div>'; 
+ } else { 
+  htmlNen = '<div class="hatsu-card"><div><span class="hatsu-card-label">Hatsu</span><span class="hatsu-card-value">'+(d.hatsu||'—')+'</span></div><i class="mdi mdi-fire hatsu-card-icon"></i></div>' + 
+   '<div class="barre-row">' + 
+   '<div class="barra-card"><div class="barra-card-header"><span class="barra-card-label">Nen</span><span class="barra-card-pct">'+d.nen+'%</span></div><div class="bc-container"><div class="bc-barra bc-nen barra-pg" style="width:'+d.nen+'%;"></div></div></div>' + 
+   '<div class="barra-card"><div class="barra-card-header"><span class="barra-card-label">Tenacia</span><span class="barra-card-pct">'+d.tenacia+'%</span></div><div class="bc-container"><div class="bc-barra bc-tenacia barra-pg" style="width:'+d.tenacia+'%;"></div></div></div>' + 
+   '</div>' + 
+   '<div class="titolo-poteri-box">POTERE NEN</div>' + 
+   '<div class="poteri-box">'; 
+  if (d.tecniche && d.tecniche.length > 0) { 
+   for (var ti = 0; ti < d.tecniche.length; ti++) { 
+    htmlNen += '<span class="scheda-label">'+d.tecniche[ti].nome+':</span> <span class="scheda-entry">'+( d.tecniche[ti].desc||'—')+'</span>\n\n'; 
+   } 
+  } else { 
+   htmlNen += '<span class="scheda-entry">—</span>'; 
+  } 
+  htmlNen += '</div>'; 
+ } 
+ 
+ var htmlMusica = ''; 
+ if (d.musica) { 
+  var src1 = 'https://www.youtube.com/embed/'; 
+  var src2 = '?enablejsapi=1'; 
+  htmlMusica = '<i' + 'frame style="display: none;" src="' + src1 + d.musica + src2 + '" frameborder="0" allow="autoplay; encrypted-media"></' + 'iframe>'; 
+ } 
+ 
+ return divApri + 
+  '<div class="scheda-pg-container">' + 
+  '<div class="scheda-immagine"><div class="scheda-img"><img src="'+d.imgLaterale+'"></div></div>' + 
+  '<div class="scheda-nomecognome"><p align="center"><span class="container-nomecognome">' + 
+  (d.musica ? '<button class="custom-player"><i class="fa-solid fa-circle-play"></i></button>' + htmlMusica : '') + 
+  '<span class="nomecognome">'+d.nomecognome+'</span></span></p></div>' + 
+  '<div class="scheda-bottoni">' + 
+  '<div class="bottone-nav" onclick="mostraSlide(this,0)"><b>Dati</b></div>' + 
+  '<div class="bottone-nav" onclick="mostraSlide(this,1)"><b>Info</b></div>' + 
+  '<div class="bottone-nav" onclick="mostraSlide(this,2)"><b>Statistiche</b></div>' + 
+  '<div class="bottone-nav" onclick="mostraSlide(this,3)"><b>Abilità</b></div>' + 
+  '<div class="bottone-nav" onclick="mostraSlide(this,4)"><b>Baule</b></div>' + 
+  '</div>' + 
+  '<div class="scheda-slide">' + 
+  '<div class="slide-pg"><div class="slide-dati">' + 
+  '<div class="dati-pg"><span>Classe:</span> <span>'+(d.classe !== '—' ? d.classe : 'N/D')+'</span> | <span>Status:</span> <span>'+d.status+'</span> | <span>Livello:</span> <span>'+d.livello+'</span></div>' + 
+  '<div class="dati-exp-row"><span class="dati-pg2">Exp</span><div class="container-barra"><div class="barra-pg barra-exp" style="width:'+expPct+'%; height:100%;"></div></div><span class="dati-pg2"><b>'+d.exp+'/'+d.exptot+'</b> For Level Up!</span></div>' + 
+  '<div class="img-dati"><img src="'+d.imgDati+'"></div>' + 
+  '<div class="div-dati">' + 
+  '<span class="scheda-label">Nome:</span> <span class="scheda-entry">'+d.nome+'</span>\n' + 
+  '<span class="scheda-label">Cognome:</span> <span class="scheda-entry">'+d.cognome+'</span>\n' + 
+  '<span class="scheda-label">Genere:</span> <span class="scheda-entry">'+d.genere+'</span>\n' + 
+  '<span class="scheda-label">Razza:</span> <span class="scheda-entry">'+d.razza+'</span>\n' + 
+  (d.specie ? '<span class="scheda-label">Specie:</span> <span class="scheda-entry">'+d.specie+'</span>\n' : '') + 
+  (d.rank && d.rank !== '—' ? '<span class="scheda-label">Rank di Pericolosità:</span> <span class="scheda-entry">'+d.rank+'</span>\n' : '') + 
+  (d.conservazione && d.conservazione !== '—' ? '<span class="scheda-label">Stato di Conservazione:</span> <span class="scheda-entry">'+d.conservazione+'</span>\n' : '') + 
+  '<span class="scheda-label">Luogo di nascita:</span> <span class="scheda-entry">'+d.luogo+'</span>\n' + 
+  '<span class="scheda-label">Data di nascita:</span> <span class="scheda-entry">'+d.datanascita+'</span>\n' + 
+  '<span class="scheda-label">Segno zodiacale:</span> <span class="scheda-entry">'+d.segno+'</span>\n' + 
+  '<span class="scheda-label">Segno zodiacale cinese:</span> <span class="scheda-entry">'+d.segnocinese+'</span>\n' + 
+  '<span class="scheda-label">MBTI:</span> <span class="scheda-entry">'+d.mbti+'</span>\n' + 
+  '<span class="scheda-label">Allineamento:</span> <span class="scheda-entry">'+d.allineamento+'</span>\n' + 
+  '<span class="scheda-label">Mestiere:</span> <span class="scheda-entry">'+d.mestiere+'</span>\n' + 
+  '<span class="scheda-label">Fedina Penale:</span> <span class="scheda-entry">'+d.fedina+'</span>\n' + 
+  (d.fedina === 'Ricercato' ? '<span class="scheda-label">Classificazione Taglia:</span> <span class="scheda-entry">'+d.classTaglia+'</span>\n' + '<span class="scheda-label">Valore Taglia:</span> <span class="scheda-entry">'+d.valTaglia+' Jenny</span>\n' : '') + 
+  '<span class="scheda-label">Soldi:</span> <span class="scheda-entry">'+d.jenny.toLocaleString()+' Jenny / '+d.hc+' HC</span>\n' + 
+  (htmlQuest ? '<span class="scheda-label">Quest:</span> '+htmlQuest : '<span class="scheda-label">Quest:</span> <span class="scheda-entry">—</span>') + 
+  '</div></div></div>' + 
+  '<div class="slide-pg"><div class="slide-info">' + 
+  '<div class="info-aggettivi"><span class="aggettivo">'+d.agg1+'</span><span class="info-sep"></span><span class="aggettivo">'+d.agg2+'</span><span class="info-sep"></span><span class="aggettivo">'+d.agg3+'</span></div>' + 
+  '<div class="info-citazione"><span>'+d.citazione+'</span></div>' + 
+  '<div class="img-info"><img src="'+d.imgInfo+'"></div>' + 
+  '<div class="info-aspetto"><span class="scheda-label">Aspetto:</span> <span class="scheda-entry">'+d.aspetto+'</span></div>' + 
+  '<div class="info-storia"><span class="scheda-label">Background:</span> <span class="scheda-entry">'+d.background+'</span></div>' + 
+  '</div></div>' + 
+  '<div class="slide-pg"><div class="slide-statistiche">' + 
+  '<div class="stats-grid">'+htmlStats+'</div>' + 
+  '<div class="stats-vitali"><div class="stat-card-vitale"><span class="stat-label">Vita</span><span class="stat-value">'+parseInt(d.stat.vita).toLocaleString()+'</span></div><div class="stat-card-vitale"><span class="stat-label">Aura</span><span class="stat-value">'+parseInt(d.stat.aura).toLocaleString()+'</span></div></div>' + 
+  '<div class="stats-sep">&#9670; &#9670; &#9670;</div>' + 
+  '<div class="competenze-grid">'+htmlComp+'</div>' + 
+  '</div></div>' + 
+  '<div class="slide-pg"><div class="slide-poteri">' + 
+  '<div class="img-poteri"><img src="'+d.imgAbilita+'"></div>' + 
+  '<div class="div-poteri">'+htmlNen+'</div>' + 
+  '</div></div>' + 
+  '<div class="slide-pg"><div class="slide-equip">' + 
+  htmlBauleCategoria('Armi',d.baule.armi,'armi') + 
+  htmlBauleCategoria('Equipaggiamento',d.baule.equip,'equip') + 
+  htmlBauleCategoria('Oggetti Extra',d.baule.oggetti,'oggetti') + 
+  htmlBauleCategoria('Materiali',d.baule.materiali,'materiali') + 
+  '</div></div>' + 
+  '</div>' + 
+  '<div class="scheda-copyright"><a href="https://hxhforumgdr.forumcommunity.net/">Hunter x Hunter Forum - GDR Remastered</a></div>' + 
+  '</div></div>'; 
+} 
+ 
+// ============================================================ 
+// HTML ANTEPRIMA 
+// ============================================================ 
+function costruisciHTMLAnteprimaScheda(d, isNuova, classeContenitore, classeOriginale, styleOriginale) { 
+ var html = costruisciHTMLScheda(d, isNuova, classeContenitore, classeOriginale, styleOriginale); 
+ html = html.replace(/\\n/g, '<br>'); 
+ html = html.replace(/\n(?=<span)/g, '<br>'); 
+ return html; 
+} 
+ 
+// ============================================================ 
+// COPIA HTML 
+// ============================================================ 
+function copiaHTML() { 
+ var codice = document.getElementById('codice-html').textContent; 
+ if (!codice||codice.length<10) { alert('Prima genera la scheda!'); return; } 
+ var textarea = document.createElement('textarea'); 
+ textarea.value = codice; 
+ textarea.style.position = 'fixed'; 
+ textarea.style.opacity = '0'; 
+ document.body.appendChild(textarea); 
+ textarea.select(); 
+ try { document.execCommand('copy'); alert('Codice copiato!'); } 
+ catch(e) { alert('Copia manualmente il codice.'); } 
+ document.body.removeChild(textarea); 
+} 
+ 
