@@ -106,6 +106,11 @@ function aggiornaHTMLSchedaNpc(d) {
 
  setEntry('Descrizione:', d.aspetto);
  setEntry('Background:', d.background);
+ // Aggiunge classe npc a info-aspetto e info-storia se presenti
+ var aspEl = root.querySelector ? root.querySelector('.info-aspetto') : null;
+ var stoEl = root.querySelector ? root.querySelector('.info-storia') : null;
+ if (aspEl && aspEl.className.indexOf('npc') === -1) aspEl.className += ' npc';
+ if (stoEl && stoEl.className.indexOf('npc') === -1) stoEl.className += ' npc';
 
  // Statistiche
  var mapStat = {'Forza':'forza','Resistenza':'resistenza','Velocità':'velocita','Riflessi':'riflessi','Destrezza':'destrezza','Mira':'mira','Intelligenza':'intelligenza','Carisma':'carisma','Istinto':'istinto','Fortuna':'fortuna','Vita':'vita','Aura':'aura'};
@@ -280,6 +285,7 @@ function costruisciHTMLSchedaNpc(d, classeContenitore, classeOriginale, styleOri
     '<div class="slide-pg"><div class="slide-valutazioni">' +
     '<div class="val-titolo">'+(sd.titolo||'Valutazione degli Esaminatori')+'</div>' +
     htmlVoci +
+    (sd.verdetto ? '<div class="val-titolo" style="margin-top:8px;">'+sd.verdetto+'</div>' : '') +
     '</div></div>';
   } else if (d.slideExtraTipo === 'altro') {
    nomeSlideExtra = 'Altro';
@@ -313,37 +319,40 @@ function costruisciHTMLSchedaNpc(d, classeContenitore, classeOriginale, styleOri
 
   // SLIDE DATI
   '<div class="slide-pg"><div class="slide-dati">' +
-  '<div class="dati-pg"><span>Classe:</span> <span>'+(d.classe !== '—' ? d.classe : 'N/D')+'</span> | <span>Status:</span> <span>'+d.status+'</span> | <span>Livello:</span> <span>'+d.livello+'</span></div>' +
-  '<div class="dati-exp-row"><span class="dati-pg2">Exp</span><div class="container-barra"><div class="barra-pg barra-exp" style="width:'+expPct+'%; height:100%;"></div></div><span class="dati-pg2"><b>'+d.exp+'/'+d.exptot+'</b> For Level Up!</span></div>' +
+  (d.livello !== null
+   ? '<div class="dati-pg"><span>Classe:</span> <span>'+(d.classe !== null && d.classe !== '—' ? d.classe : 'N/D')+'</span> | <span>Status:</span> <span>'+(d.status||'Nessuno')+'</span> | <span>Livello:</span> <span>'+d.livello+'</span></div>' +
+     '<div class="dati-exp-row"><span class="dati-pg2">Exp</span><div class="container-barra"><div class="barra-pg barra-exp" style="width:'+expPct+'%; height:100%;"></div></div><span class="dati-pg2"><b>'+(d.exp||0)+'/'+d.exptot+'</b> For Level Up!</span></div>'
+   : '') +
   '<div class="img-dati"><img src="'+d.imgDati+'"></div>' +
   '<div class="div-dati">' +
   '<span class="scheda-label">Nome:</span> <span class="scheda-entry">'+d.nome+'</span>\n' +
   '<span class="scheda-label">Cognome:</span> <span class="scheda-entry">'+d.cognome+'</span>\n' +
-  '<span class="scheda-label">Genere:</span> <span class="scheda-entry">'+d.genere+'</span>\n' +
+  (d.genere !== null ? '<span class="scheda-label">Genere:</span> <span class="scheda-entry">'+d.genere+'</span>\n' : '') +
   '<span class="scheda-label">Razza:</span> <span class="scheda-entry">'+d.razza+'</span>\n' +
   (d.specie ? '<span class="scheda-label">Specie:</span> <span class="scheda-entry">'+d.specie+'</span>\n' : '') +
   (d.rank && d.rank !== '—' ? '<span class="scheda-label">Rank di Pericolosità:</span> <span class="scheda-entry">'+d.rank+'</span>\n' : '') +
   (d.conservazione && d.conservazione !== '—' ? '<span class="scheda-label">Stato di Conservazione:</span> <span class="scheda-entry">'+d.conservazione+'</span>\n' : '') +
-  '<span class="scheda-label">Luogo di nascita:</span> <span class="scheda-entry">'+d.luogo+'</span>\n' +
-  '<span class="scheda-label">Data di nascita:</span> <span class="scheda-entry">'+d.datanascita+'</span>\n' +
-  '<span class="scheda-label">Segno zodiacale:</span> <span class="scheda-entry">'+d.segno+'</span>\n' +
-  '<span class="scheda-label">Segno zodiacale cinese:</span> <span class="scheda-entry">'+d.segnocinese+'</span>\n' +
-  '<span class="scheda-label">MBTI:</span> <span class="scheda-entry">'+d.mbti+'</span>\n' +
-  '<span class="scheda-label">Allineamento:</span> <span class="scheda-entry">'+d.allineamento+'</span>\n' +
-  '<span class="scheda-label">Mestiere:</span> <span class="scheda-entry">'+d.mestiere+'</span>\n' +
-  '<span class="scheda-label">Fedina Penale:</span> <span class="scheda-entry">'+d.fedina+'</span>\n' +
+  (d.luogo !== null ? '<span class="scheda-label">Luogo di nascita:</span> <span class="scheda-entry">'+d.luogo+'</span>\n' : '') +
+  (d.datanascita !== null ? '<span class="scheda-label">Data di nascita:</span> <span class="scheda-entry">'+d.datanascita+'</span>\n' : '') +
+  (d.segno !== null ? '<span class="scheda-label">Segno zodiacale:</span> <span class="scheda-entry">'+d.segno+'</span>\n' : '') +
+  (d.segnocinese !== null ? '<span class="scheda-label">Segno zodiacale cinese:</span> <span class="scheda-entry">'+d.segnocinese+'</span>\n' : '') +
+  (d.mbti !== null ? '<span class="scheda-label">MBTI:</span> <span class="scheda-entry">'+d.mbti+'</span>\n' : '') +
+  (d.allineamento !== null ? '<span class="scheda-label">Allineamento:</span> <span class="scheda-entry">'+d.allineamento+'</span>\n' : '') +
+  (d.mestiere !== null ? '<span class="scheda-label">Mestiere:</span> <span class="scheda-entry">'+d.mestiere+'</span>\n' : '') +
+  (d.classe !== null ? '<span class="scheda-label">Classe:</span> <span class="scheda-entry">'+(d.classe !== '—' ? d.classe : 'N/D')+'</span>\n' : '') +
+  (d.fedina !== null ? '<span class="scheda-label">Fedina Penale:</span> <span class="scheda-entry">'+d.fedina+'</span>\n' : '') +
   (d.fedina === 'Ricercato' ? '<span class="scheda-label">Classificazione Taglia:</span> <span class="scheda-entry">'+d.classTaglia+'</span>\n' + '<span class="scheda-label">Valore Taglia:</span> <span class="scheda-entry">'+d.valTaglia+' Jenny</span>\n' : '') +
-  '<span class="scheda-label">Soldi:</span> <span class="scheda-entry">'+d.jenny+' Jenny / '+d.hc+' HC</span>\n' +
+  (d.jenny !== null ? '<span class="scheda-label">Soldi:</span> <span class="scheda-entry">'+d.jenny+' Jenny / '+d.hc+' HC</span>\n' : '') +
   htmlCampiExtra +
   (htmlApparizioni ? '<span class="scheda-label">Apparizioni:</span> '+htmlApparizioni : '<span class="scheda-label">Apparizioni:</span> <span class="scheda-entry">—</span>') +
   '</div></div></div>' +
 
-  // SLIDE INFO (senza immagini)
+  // SLIDE INFO (senza immagini, classi npc su aspetto e storia)
   '<div class="slide-pg"><div class="slide-info">' +
   '<div class="info-aggettivi"><span class="aggettivo">'+d.agg1+'</span><span class="info-sep"></span><span class="aggettivo">'+d.agg2+'</span><span class="info-sep"></span><span class="aggettivo">'+d.agg3+'</span></div>' +
   '<div class="info-citazione"><span>'+d.citazione+'</span></div>' +
-  '<div class="info-aspetto"><span class="scheda-label">Descrizione:</span> <span class="scheda-entry">'+d.aspetto+'</span></div>' +
-  '<div class="info-storia"><span class="scheda-label">Background:</span> <span class="scheda-entry">'+d.background+'</span></div>' +
+  '<div class="info-aspetto npc"><span class="scheda-label">Descrizione:</span> <span class="scheda-entry">'+d.aspetto+'</span></div>' +
+  '<div class="info-storia npc"><span class="scheda-label">Background:</span> <span class="scheda-entry">'+d.background+'</span></div>' +
   '</div></div>' +
 
   // SLIDE STATISTICHE
