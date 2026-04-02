@@ -288,12 +288,12 @@ function costruisciForm() {
  }
 
  html += sezioneForm('<i class="fa-solid fa-user"></i> Dati Personali', costruisciDatiPersonali(isNuova));
+ html += sezioneForm('<i class="fa-solid fa-list"></i> Campi Dati Extra', costruisciCampiExtra());
  html += sezioneForm('<i class="fa-solid fa-image"></i> Immagini', costruisciImmagini());
  html += sezioneForm('<i class="fa-solid fa-star"></i> Info &amp; Personalità', costruisciInfo());
  html += sezioneForm('<i class="fa-solid fa-chart-bar"></i> Statistiche', costruisciStatistiche(isNuova));
  html += sezioneForm('<i class="fa-solid fa-fire"></i> Abilità Nen', costruisciNen(isNuova));
  html += sezioneForm('<i class="fa-solid fa-scroll"></i> Apparizioni', costruisciApparizioni(isNuova));
- html += sezioneForm('<i class="fa-solid fa-list"></i> Campi Dati Extra', costruisciCampiExtra());
  html += sezioneForm('<i class="fa-solid fa-bag-shopping"></i> Baule', costruisciBalue());
  html += sezioneForm('<i class="fa-solid fa-music"></i> Musica', costruisciMusica());
  html += sezioneForm('<i class="fa-solid fa-layer-group"></i> Slide Extra', costruisciSlideExtra(isNuova));
@@ -394,18 +394,47 @@ function campoReadonly(label, valore) {
 // ============================================================
 // SEZIONI DEL FORM
 // ============================================================
+// Genera una voce removibile dei dati personali
+// id: id del wrapper div; contenuto: html interno; obbligatoria: se true niente tasto rimuovi
+function voceRemovibile(id, contenuto, obbligatoria) {
+ if (obbligatoria) return '<div id="'+id+'">' + contenuto + '</div>';
+ return '<div id="'+id+'" style="position:relative;">' +
+  '<button onclick="rimuoviVoceDati(\''+id+'\')" title="Rimuovi questa voce" style="position:absolute; top:0; right:0; background:rgba(80,0,0,0.35); color:#F9C6C6; border:1px solid #6b0b0b; padding:3px 8px; border-radius:4px; cursor:pointer; font-size:0.8em; z-index:1;"><i class="fa-solid fa-xmark"></i></button>' +
+  contenuto +
+  '</div>';
+}
+
+function rimuoviVoceDati(id) {
+ var el = document.getElementById(id);
+ if (el && el.parentNode) el.parentNode.removeChild(el);
+}
+
 function costruisciDatiPersonali(isNuova) {
  var html = '';
- html += riga2(inputText('campo-nome','Nome','Es. Hisoka'), inputText('campo-cognome','Cognome','Es. Morrow'));
- html += riga2(
-  inputText('campo-genere','Genere','Uomo / Donna / Neutro / Ecc.'),
-  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Razza</label>' +
-  '<select id="campo-razza" onchange="aggiornaRazza('+isNuova+')" style="'+STILE_INPUT+' background:#292354;">' +
-  '<option value="Umano">Umano</option>' +
-  '<option value="Bestia Demoniaca">Bestia Demoniaca</option>' +
-  '</select></div>'
+ var opzioniTaglia = '';
+ for (var ct = 0; ct < CLASSIFICAZIONI_TAGLIA.length; ct++) {
+  opzioniTaglia += '<option value="'+CLASSIFICAZIONI_TAGLIA[ct]+'">'+CLASSIFICAZIONI_TAGLIA[ct]+'</option>';
+ }
+
+ // Obbligatori: Nome, Cognome, Razza
+ html += voceRemovibile('vd-nomecognome',
+  riga2(inputText('campo-nome','Nome','Es. Hisoka'), inputText('campo-cognome','Cognome','Es. Morrow')),
+  true
  );
- // Specie
+ html += voceRemovibile('vd-generarazza',
+  riga2(
+   inputText('campo-genere','Genere','Uomo / Donna / Neutro / Ecc.'),
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Razza</label>' +
+   '<select id="campo-razza" onchange="aggiornaRazza('+isNuova+')" style="'+STILE_INPUT+' background:#292354;">' +
+   '<option value="Umano">Umano</option>' +
+   '<option value="Bestia Demoniaca">Bestia Demoniaca</option>' +
+   '<option value="Animale">Animale</option>' +
+   '</select></div>'
+  ),
+  true
+ );
+
+ // Specie + Rank (visibilità gestita da aggiornaRazza, sempre presenti nel DOM)
  html += '<div id="campo-specie-wrap" style="display:none; margin-bottom:14px;">' +
   '<label style="'+STILE_LABEL+'">Specie</label>' +
   '<select id="campo-specie" onchange="aggiornaRazza('+isNuova+')" style="'+STILE_INPUT+' background:#292354;">';
@@ -413,50 +442,61 @@ function costruisciDatiPersonali(isNuova) {
   html += '<option value="'+SPECIE_BESTIA[sp]+'">'+SPECIE_BESTIA[sp]+'</option>';
  }
  html += '</select></div>';
- // Rank (readonly calcolato)
+ // Specie Animale: testo libero, visibile solo se razza === 'Animale'
+ html += '<div id="campo-specie-animale-wrap" style="display:none;">' +
+  inputText('campo-specie-animale','Specie','Es. Lupo, Aquila, Serpente Chimera...') +
+  '</div>';
  html += '<div id="campo-rank-wrap" style="display:none;">' +
   riga2(
    '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Rank di Pericolosità</label><div id="campo-rank-val" style="'+STILE_READONLY+'">—</div></div>',
    '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Stato di Conservazione</label><div id="campo-conservazione-val" style="'+STILE_READONLY+'">—</div></div>'
-  ) +
- '</div>';
- // Luogo di nascita
- html += '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Luogo di nascita</label>' +
-  '<select id="campo-luogo" style="'+STILE_INPUT+' background:#292354;"></select></div>';
- html += inputDate('campo-datanascita', 'Data di nascita');
- html += riga2(inputSelect('campo-segno','Segno zodiacale', SEGNI_ZODIACALI), inputSelect('campo-segnocinese','Segno zodiacale cinese', SEGNI_CINESI));
- html += riga2(inputSelect('campo-mbti','MBTI', MBTI_TIPI), inputSelect('campo-allineamento','Allineamento', ALLINEAMENTI));
- html += inputText('campo-mestiere','Mestiere','Es. Assassino');
- // Classe — visibile solo per Umani, tutte le classi disponibili
- html += '<div id="campo-classe-wrap">' +
-  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Classe</label>' +
-  '<select id="campo-classe" style="'+STILE_INPUT+' background:#292354;"></select></div>' +
- '</div>';
- // Fedina — sempre select libera
- html += '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Fedina Penale</label>' +
+  ) + '</div>';
+
+ // Removibili
+ html += voceRemovibile('vd-luogo',
+  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Luogo di nascita</label>' +
+  '<select id="campo-luogo" style="'+STILE_INPUT+' background:#292354;"></select></div>'
+ );
+ html += voceRemovibile('vd-data', inputDate('campo-datanascita', 'Data di nascita'));
+ html += voceRemovibile('vd-segni',
+  riga2(inputSelect('campo-segno','Segno zodiacale', SEGNI_ZODIACALI), inputSelect('campo-segnocinese','Segno zodiacale cinese', SEGNI_CINESI))
+ );
+ html += voceRemovibile('vd-mbti',
+  riga2(inputSelect('campo-mbti','MBTI', MBTI_TIPI), inputSelect('campo-allineamento','Allineamento', ALLINEAMENTI))
+ );
+ html += voceRemovibile('vd-mestiere', inputText('campo-mestiere','Mestiere','Es. Assassino'));
+ // Classe — non removibile
+ html += voceRemovibile('vd-classe',
+  '<div id="campo-classe-wrap"><div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Classe</label>' +
+  '<select id="campo-classe" style="'+STILE_INPUT+' background:#292354;"></select></div></div>',
+  true
+ );
+ html += voceRemovibile('vd-fedina',
+  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Fedina Penale</label>' +
   '<select id="campo-fedina" onchange="aggiornaFedina(false)" style="'+STILE_INPUT+' background:#292354;">' +
   '<option value="Incensurato">Incensurato</option>' +
   '<option value="Ricercato">Ricercato</option>' +
-  '</select></div>';
- // Taglia
- html += '<div id="campo-taglia-wrap" style="display:none;">';
- var opzioniTaglia = '';
- for (var ct = 0; ct < CLASSIFICAZIONI_TAGLIA.length; ct++) {
-  opzioniTaglia += '<option value="'+CLASSIFICAZIONI_TAGLIA[ct]+'">'+CLASSIFICAZIONI_TAGLIA[ct]+'</option>';
- }
- html += riga2(
-  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Classificazione Taglia</label>' +
-  '<select id="campo-classtaglia" onchange="aggiornaTaglia()" style="'+STILE_INPUT+' background:#292354;">' + opzioniTaglia + '</select></div>',
-  inputText('campo-valtaglia','Valore Taglia (Jenny)','Es. 1000')
+  '</select></div>' +
+  '<div id="campo-taglia-wrap" style="display:none;">' +
+  riga2(
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Classificazione Taglia</label>' +
+   '<select id="campo-classtaglia" onchange="aggiornaTaglia()" style="'+STILE_INPUT+' background:#292354;">' + opzioniTaglia + '</select></div>',
+   inputText('campo-valtaglia','Valore Taglia (Jenny)','Es. 1000')
+  ) + '</div>'
  );
- html += '</div>';
- // Status, Livello, EXP, Jenny, HC — tutti liberi
- html += inputSelect('campo-status','Status', STATUS);
- html += riga2(
-  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Livello</label><input type="text" id="campo-livello" placeholder="Es. 50" style="'+STILE_INPUT+'"></div>',
-  inputText('campo-exp','EXP attuale','Es. 80')
+ // Status — non removibile
+ html += voceRemovibile('vd-status', inputSelect('campo-status','Status', STATUS), true);
+ // Livello ed EXP — non removibili
+ html += voceRemovibile('vd-livello',
+  riga2(
+   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Livello</label><input type="text" id="campo-livello" placeholder="Es. 50" style="'+STILE_INPUT+'"></div>',
+   inputText('campo-exp','EXP attuale','Es. 80')
+  ),
+  true
  );
- html += riga2(inputText('campo-jenny','Jenny','Es. 500000'), inputText('campo-hc','HC','Es. 0'));
+ html += voceRemovibile('vd-soldi',
+  riga2(inputText('campo-jenny','Jenny','Es. 500000'), inputText('campo-hc','HC','Es. 0'))
+ );
  return html;
 }
 
@@ -721,6 +761,9 @@ function costruisciSlideExtra(isNuova) {
  html += inputText('val-titolo','Titolo valutazione','Valutazione degli Esaminatori');
  html += '<div id="lista-valutazioni"></div>';
  html += '<button onclick="aggiungiValutazione()" style="background:transparent; color:#8FBEBA; border:1px dashed #3B8686; padding:8px 20px; border-radius:6px; cursor:pointer; font-family:\'Montserrat\'; margin-top:5px;"><i class="fa-solid fa-plus"></i> Aggiungi Valutazione</button>';
+ html += '<div style="margin-top:18px; border-top:1px solid #3B8686; padding-top:14px;">';
+ html += inputText('val-verdetto','Verdetto (opzionale — appare sotto le valutazioni)','Es. Probabilità di promozione: 15%');
+ html += '</div>';
  html += '</div>'; // fine pannello-valutazioni
 
  // --- Pannello ALTRO ---
@@ -816,12 +859,17 @@ function aggiornaRazza(isNuova) {
  var razzaEl = document.getElementById('campo-razza');
  var specieEl = document.getElementById('campo-specie');
  if (!razzaEl) return;
- var isBestia = razzaEl.value === 'Bestia Demoniaca';
+ var razza = razzaEl.value;
+ var isBestia = razza === 'Bestia Demoniaca';
+ var isAnimale = razza === 'Animale';
  var specie = specieEl ? specieEl.value : '';
 
+ // Mostra/nasconde i due wrapper specie
  var spWrap = document.getElementById('campo-specie-wrap');
+ var spAnWrap = document.getElementById('campo-specie-animale-wrap');
  var rankWrap = document.getElementById('campo-rank-wrap');
  if (spWrap) spWrap.style.display = isBestia ? '' : 'none';
+ if (spAnWrap) spAnWrap.style.display = isAnimale ? '' : 'none';
  if (rankWrap) rankWrap.style.display = isBestia ? '' : 'none';
 
  if (isBestia && DATI_SPECIE[specie]) {
@@ -933,6 +981,8 @@ function aggiungiTecnica() {
 // ============================================================
 function raccogliDati(isNuova) {
  function val(id) { var e=document.getElementById(id); return e?e.value.trim():''; }
+ // Restituisce true se il wrapper della voce è ancora presente nel DOM
+ function presente(wrapId) { return !!document.getElementById(wrapId); }
 
  var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna'];
  var stat = {};
@@ -944,7 +994,8 @@ function raccogliDati(isNuova) {
  stat.aura = (function(){ var e=document.getElementById('stat-aura'); return e?(e.value.trim()||'500'):'500'; })();
 
  var isBestia = (function(){ var e=document.getElementById('campo-razza'); return e && e.value==='Bestia Demoniaca'; })();
- var specie = isBestia ? (val('campo-specie')||'') : '';
+ var isAnimale = (function(){ var e=document.getElementById('campo-razza'); return e && e.value==='Animale'; })();
+ var specie = isBestia ? (val('campo-specie')||'') : (isAnimale ? (val('campo-specie-animale')||'') : '');
  var rank = isBestia && DATI_SPECIE[specie] ? DATI_SPECIE[specie].rank : '—';
  var conservazione = isBestia && DATI_SPECIE[specie] ? DATI_SPECIE[specie].conservazione : '—';
  var feEl = document.getElementById('campo-fedina');
@@ -1039,6 +1090,7 @@ function raccogliDati(isNuova) {
   slideExtraData.difese   = raccogliListaTecnicaSlide('lista-difese');
  } else if (slideExtraTipo === 'valutazioni') {
   slideExtraData.titolo = val('val-titolo') || 'Valutazione degli Esaminatori';
+  slideExtraData.verdetto = val('val-verdetto') || '';
   slideExtraData.voci = [];
   var lv2 = document.getElementById('lista-valutazioni');
   if (lv2) {
@@ -1070,28 +1122,28 @@ function raccogliDati(isNuova) {
   nome: nomeVal,
   cognome: cognomeVal,
   nomecognome: (nomeVal==='—'&&cognomeVal==='') ? nomeVal : (nomeVal+' '+cognomeVal).trim(),
-  genere: val('campo-genere')||'—',
-  razza: isBestia ? 'Bestia Demoniaca' : 'Umano',
+  genere: presente('vd-generarazza') ? (val('campo-genere')||'—') : null,
+  razza: isBestia ? 'Bestia Demoniaca' : (isAnimale ? 'Animale' : 'Umano'),
   specie: specie,
   rank: rank,
   conservazione: conservazione,
-  fedina: fedina,
-  classTaglia: classTaglia,
-  valTaglia: valTaglia,
-  luogo: val('campo-luogo')||'—',
-  datanascita: leggiData('campo-datanascita'),
-  segno: val('campo-segno')||'—',
-  segnocinese: val('campo-segnocinese')||'—',
-  mbti: val('campo-mbti')||'—',
-  allineamento: val('campo-allineamento')||'—',
-  mestiere: val('campo-mestiere')||'—',
-  classe: isBestia ? '—' : (val('campo-classe')||'—'),
-  status: val('campo-status')||'Nessuno',
-  livello: val('campo-livello')||'1',
-  exp: val('campo-exp')||'0',
+  fedina: presente('vd-fedina') ? fedina : null,
+  classTaglia: presente('vd-fedina') ? classTaglia : '—',
+  valTaglia: presente('vd-fedina') ? valTaglia : '—',
+  luogo: presente('vd-luogo') ? (val('campo-luogo')||'—') : null,
+  datanascita: presente('vd-data') ? leggiData('campo-datanascita') : null,
+  segno: presente('vd-segni') ? (val('campo-segno')||'—') : null,
+  segnocinese: presente('vd-segni') ? (val('campo-segnocinese')||'—') : null,
+  mbti: presente('vd-mbti') ? (val('campo-mbti')||'—') : null,
+  allineamento: presente('vd-mbti') ? (val('campo-allineamento')||'—') : null,
+  mestiere: presente('vd-mestiere') ? (val('campo-mestiere')||'—') : null,
+  classe: presente('vd-classe') ? (isBestia ? '—' : (val('campo-classe')||'—')) : null,
+  status: presente('vd-status') ? (val('campo-status')||'Nessuno') : null,
+  livello: presente('vd-livello') ? (val('campo-livello')||'1') : null,
+  exp: presente('vd-livello') ? (val('campo-exp')||'0') : null,
   exptot: expTot,
-  jenny: val('campo-jenny')||'0',
-  hc: val('campo-hc')||'0',
+  jenny: presente('vd-soldi') ? (val('campo-jenny')||'0') : null,
+  hc: presente('vd-soldi') ? (val('campo-hc')||'0') : null,
   imgLaterale: val('campo-img-laterale')||'https://via.placeholder.com/664x184',
   imgDati: val('campo-img-dati')||'https://via.placeholder.com/154x429',
   agg1: val('campo-agg1')||'Aggettivo 1',
@@ -1228,7 +1280,12 @@ function importaScheda() {
   var val2=spans[i+1].className==='scheda-entry'?spans[i+1].textContent.trim():null;
   if(!val2) continue;
   if(lbl2==='Razza:')                  setSelect('campo-razza',val2);
-  if(lbl2==='Specie:')                 setSelect('campo-specie',val2);
+  if(lbl2==='Specie:') {
+   // Se razza è Animale usa il campo testo libero, altrimenti il select bestia
+   var razzaImport = document.getElementById('campo-razza');
+   if (razzaImport && razzaImport.value === 'Animale') { var saEl=document.getElementById('campo-specie-animale'); if(saEl) saEl.value=val2; }
+   else setSelect('campo-specie',val2);
+  }
   if(lbl2==='Fedina Penale:')          setSelect('campo-fedina',val2);
   if(lbl2==='Classificazione Taglia:') setSelect('campo-classtaglia',val2);
   if(lbl2==='Valore Taglia:')          setVal('campo-valtaglia',val2.replace(/\./g,'').replace(/[^\d]/g,''));
