@@ -675,7 +675,7 @@ function aggiungiCampoExtra() {
  div.innerHTML =
   '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' +
   '<td style="width:35%; padding-right:5px; vertical-align:bottom;">' + inputText('extra-label-'+idx,'Testo del Label','Es. Affiliazione:') + '</td>' +
-  '<td style="width:53%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('extra-val-'+idx,'Contenuto','Es. Brigata dei Fantasmi') + '</td>' +
+  '<td style="width:53%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('extra-val-'+idx,'Contenuto','Es. Associazione degli Hunter') + '</td>' +
   '<td style="width:12%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' +
   '<button onclick="rimuoviElemento(\'extra-row-'+idx+'\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' +
   '</td></tr></table>';
@@ -887,7 +887,7 @@ function aggiungiCampoAltro() {
  div.innerHTML =
   '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' +
   '<td style="width:35%; padding-right:5px; vertical-align:bottom;">' + inputText('altro-label-'+idx,'Testo del Label','Es. Affiliazione:') + '</td>' +
-  '<td style="width:53%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('altro-val-'+idx,'Contenuto','Es. Brigata dei Fantasmi') + '</td>' +
+  '<td style="width:53%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('altro-val-'+idx,'Contenuto','Es. Associazione degli Hunter') + '</td>' +
   '<td style="width:12%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' +
   '<button onclick="rimuoviElemento(\'altro-row-'+idx+'\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' +
   '</td></tr></table>';
