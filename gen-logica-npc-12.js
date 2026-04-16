@@ -658,7 +658,7 @@ function costruisciNen(isNuova) {
   html += inputTextarea('profilo-'+p+'-desc', 'Descrizione', 'Descrizione del profilo...', 2);
   html += inputTextarea('profilo-'+p+'-bonus', 'Bonus', 'Descrizione del bonus...', 2);
   html += inputTextarea('profilo-'+p+'-malus', 'Eventuali Condizioni e/o Restrizioni e/o Malus', 'Descrizione...', 2);
-  html += inputTextarea('profilo-'+p+'-costo', 'Costo per Fase', 'Es. 5 punti Nen per turno', 1);
+  html += inputTextarea('profilo-'+p+'-costo', 'Costo per Fase', 'Es. 40 Aura per fase', 1);
   html += '</div>';
  }
  html += '</div>';
@@ -681,7 +681,7 @@ function costruisciBoxTecniche(id, label, num) {
   html += inputTextarea('tecnica-'+id+'-'+t+'-desc', 'Descrizione', 'Descrizione della tecnica...', 2);
   html += inputTextarea('tecnica-'+id+'-'+t+'-bonus', 'Bonus', 'Descrizione del bonus...', 2);
   html += inputTextarea('tecnica-'+id+'-'+t+'-malus', 'Eventuali Condizioni e/o Restrizioni e/o Malus', 'Descrizione...', 2);
-  html += inputTextarea('tecnica-'+id+'-'+t+'-costo', 'Costo per Fase', 'Es. 3 punti Nen', 1);
+  html += inputTextarea('tecnica-'+id+'-'+t+'-costo', 'Costo per Fase', 'Es. 40 Aura per fase', 1);
   html += '</div>';
  }
  html += '</div>';
@@ -738,7 +738,7 @@ function aggiungiCampoExtra() {
  div.innerHTML =
   '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' +
   '<td style="width:35%; padding-right:5px; vertical-align:bottom;">' + inputText('extra-label-'+idx,'Testo del Label','Es. Affiliazione:') + '</td>' +
-  '<td style="width:53%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('extra-val-'+idx,'Contenuto','Es. Brigata dei Fantasmi') + '</td>' +
+  '<td style="width:53%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('extra-val-'+idx,'Contenuto','Es. Associazione Hunter') + '</td>' +
   '<td style="width:12%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' +
   '<button onclick="rimuoviElemento(\'extra-row-'+idx+'\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' +
   '</td></tr></table>';
@@ -950,7 +950,7 @@ function aggiungiCampoAltro() {
  div.innerHTML =
   '<table style="width:100%; border-collapse:collapse; table-layout:fixed;"><tr>' +
   '<td style="width:35%; padding-right:5px; vertical-align:bottom;">' + inputText('altro-label-'+idx,'Testo del Label','Es. Affiliazione:') + '</td>' +
-  '<td style="width:53%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('altro-val-'+idx,'Contenuto','Es. Brigata dei Fantasmi') + '</td>' +
+  '<td style="width:53%; padding-left:5px; padding-right:5px; vertical-align:bottom;">' + inputText('altro-val-'+idx,'Contenuto','Es. Associazione Hunter') + '</td>' +
   '<td style="width:12%; vertical-align:bottom; padding-bottom:14px; text-align:center;">' +
   '<button onclick="rimuoviElemento(\'altro-row-'+idx+'\')" style="background:rgba(80,0,0,0.4); color:#F9C6C6; border:1px solid #6b0b0b; padding:10px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>' +
   '</td></tr></table>';
