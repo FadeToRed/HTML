@@ -307,7 +307,7 @@ function costruisciForm() {
  html += sezioneForm('<i class="fa-solid fa-chart-bar"></i> Statistiche', costruisciStatistiche(isNuova)); 
  html += sezioneForm('<i class="fa-solid fa-fire"></i> Abilità Nen', costruisciNen(isNuova)); 
  html += sezioneForm('<i class="fa-solid fa-scroll"></i> Quest', costruisciQuest(isNuova)); 
- html += sezioneForm('<i class="fa-solid fa-bag-shopping"></i> Baule', costruisciBalue()); 
+ html += sezioneForm('<i class="fa-solid fa-bag-shopping"></i> Baule', costruisciBalue(isNuova));
  html += sezioneForm('<i class="fa-solid fa-music"></i> Musica', costruisciMusica()); 
  
  html += '<div style="text-align:center; margin-top:40px; padding-bottom:40px;">'; 
@@ -430,7 +430,7 @@ function campoReadonly(label, valore) {
 // ============================================================ 
 function costruisciDatiPersonali(isNuova) { 
  var html = ''; 
- html += riga2(inputText('campo-nome','Nome','Es. Gon'), inputText('campo-cognome','Cognome','Es. Freecs')); 
+ html += riga2(inputText('campo-nome','Nome','Es. Gon'), inputText('campo-cognome','Cognome','Es. Freecss')); 
  html += riga2(inputText('campo-genere','Genere','Uomo / Donna / Neutro / Ecc.'), 
   '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Razza</label>' + 
   '<select id="campo-razza" onchange="aggiornaRazza('+isNuova+')" style="'+STILE_INPUT+' background:#292354;">' + 
@@ -728,7 +728,7 @@ function costruisciNen(isNuova) {
   html += inputTextarea('profilo-'+p+'-desc', 'Descrizione', 'Descrizione del profilo...', 2);
   html += inputTextarea('profilo-'+p+'-bonus', 'Bonus', 'Descrizione del bonus...', 2);
   html += inputTextarea('profilo-'+p+'-malus', 'Eventuali Condizioni e/o Restrizioni e/o Malus', 'Descrizione...', 2);
-  html += inputTextarea('profilo-'+p+'-costo', 'Costo per Fase', 'Es. 5 punti Nen per turno', 1);
+  html += inputTextarea('profilo-'+p+'-costo', 'Costo per Fase', 'Es. 40 Aura per fase', 1);
   html += '</div>';
  }
  html += '</div>';
@@ -756,7 +756,7 @@ function costruisciBoxTecniche(id, label, num) {
   html += inputTextarea('tecnica-'+id+'-'+t+'-desc', 'Descrizione', 'Descrizione della tecnica...', 2);
   html += inputTextarea('tecnica-'+id+'-'+t+'-bonus', 'Bonus', 'Descrizione del bonus...', 2);
   html += inputTextarea('tecnica-'+id+'-'+t+'-malus', 'Eventuali Condizioni e/o Restrizioni e/o Malus', 'Descrizione...', 2);
-  html += inputTextarea('tecnica-'+id+'-'+t+'-costo', 'Costo per Fase', 'Es. 3 punti Nen', 1);
+  html += inputTextarea('tecnica-'+id+'-'+t+'-costo', 'Costo per Fase', 'Es. 40 Aura per fase', 1);
   html += '</div>';
  }
  html += '</div>';
@@ -813,24 +813,29 @@ function aggiungiTecnica() {
  lista.appendChild(div); 
 } 
  
-function costruisciBalue() { 
- var categorie = [ 
-  { nome:'Armi', id:'armi' }, 
-  { nome:'Equipaggiamento', id:'equip' }, 
-  { nome:'Oggetti Extra', id:'oggetti' }, 
-  { nome:'Materiali', id:'materiali' } 
- ]; 
- var html = ''; 
- for (var i = 0; i < categorie.length; i++) { 
-  var cat = categorie[i]; 
-  html += '<div style="margin-bottom:18px;">'; 
-  html += '<h4 style="color:#CFF09E; font-family:\'Montserrat\'; font-size:1.2em; margin-bottom:8px;">' + cat.nome + '</h4>'; 
-  html += '<div id="lista-' + cat.id + '"></div>'; 
-  html += '<button onclick="aggiungiItem(\'' + cat.id + '\')" style="background:transparent; color:#8FBEBA; border:1px dashed #3B8686; padding:6px 16px; border-radius:6px; cursor:pointer; font-family:\'Montserrat\'; font-size:1em;"><i class="fa-solid fa-plus"></i> Aggiungi</button>'; 
-  html += '</div>'; 
- } 
- return html; 
-} 
+function costruisciBalue(isNuova) {
+ if (isNuova) {
+  return '<p style="color:#8FBEBA; font-size:0.9em; font-style:italic;">' +
+   '<i class="fa-solid fa-info-circle"></i> Un nuovo PG non ha ancora oggetti con sé. ' +
+   'Il baule sarà vuoto nella scheda generata.</p>';
+ }
+ var categorie = [
+  { nome:'Armi', id:'armi' },
+  { nome:'Equipaggiamento', id:'equip' },
+  { nome:'Oggetti Extra', id:'oggetti' },
+  { nome:'Materiali', id:'materiali' }
+ ];
+ var html = '';
+ for (var i = 0; i < categorie.length; i++) {
+  var cat = categorie[i];
+  html += '<div style="margin-bottom:18px;">';
+  html += '<h4 style="color:#CFF09E; font-family:\'Montserrat\'; font-size:1.2em; margin-bottom:8px;">' + cat.nome + '</h4>';
+  html += '<div id="lista-' + cat.id + '"></div>';
+  html += '<button onclick="aggiungiItem(\'' + cat.id + '\')" style="background:transparent; color:#8FBEBA; border:1px dashed #3B8686; padding:6px 16px; border-radius:6px; cursor:pointer; font-family:\'Montserrat\'; font-size:1em;"><i class="fa-solid fa-plus"></i> Aggiungi</button>';
+  html += '</div>';
+ }
+ return html;
+}
  
 function aggiungiItem(categoria) { 
  var lista = document.getElementById('lista-' + categoria); 
