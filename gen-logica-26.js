@@ -728,7 +728,7 @@ function costruisciNen(isNuova) {
   html += inputTextarea('profilo-'+p+'-desc', 'Descrizione', 'Descrizione del profilo...', 2);
   html += inputTextarea('profilo-'+p+'-bonus', 'Bonus', 'Descrizione del bonus...', 2);
   html += inputTextarea('profilo-'+p+'-malus', 'Eventuali Condizioni e/o Restrizioni e/o Malus', 'Descrizione...', 2);
-  html += inputTextarea('profilo-'+p+'-costo', 'Costo per Fase', 'Es. 5 punti Nen per turno', 1);
+  html += inputTextarea('profilo-'+p+'-costo', 'Costo per Fase', 'Es. 40 Aura per turno', 1);
   html += '</div>';
  }
  html += '</div>';
@@ -756,7 +756,7 @@ function costruisciBoxTecniche(id, label, num) {
   html += inputTextarea('tecnica-'+id+'-'+t+'-desc', 'Descrizione', 'Descrizione della tecnica...', 2);
   html += inputTextarea('tecnica-'+id+'-'+t+'-bonus', 'Bonus', 'Descrizione del bonus...', 2);
   html += inputTextarea('tecnica-'+id+'-'+t+'-malus', 'Eventuali Condizioni e/o Restrizioni e/o Malus', 'Descrizione...', 2);
-  html += inputTextarea('tecnica-'+id+'-'+t+'-costo', 'Costo per Fase', 'Es. 3 punti Nen', 1);
+  html += inputTextarea('tecnica-'+id+'-'+t+'-costo', 'Costo per Fase', 'Es. 40 Aura', 1);
   html += '</div>';
  }
  html += '</div>';
