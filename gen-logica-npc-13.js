@@ -16,11 +16,14 @@ var STAT_BASE = {
 };
 
 var BONUS_LUOGO = {
- 'Neo Green Life':            { resistenza: 5, velocita: 5, riflessi: 5 },
- 'Repubblica di Padokia':     { riflessi: 5, destrezza: 5, intelligenza: 5 },
- 'York Shin':                 { mira: 5, intelligenza: 5, carisma: 5 },
- 'Città delle Stelle Cadenti':{ forza: 5, resistenza: 5, destrezza: 5 },
- 'Zapan':                     { forza: 5, intelligenza: 5, carisma: 5 }
+ 'Narevka':            { destrezza: 5, intelligenza: 5, riflessi: 5 },
+ 'Solmara':     { forza: 5, intelligenza: 5, intelligenza: 5 },
+ 'Yorbian':                 { mira: 5, intelligenza: 5, carisma: 5 },
+ 'Azia': { intelligenza: 5, istinto: 5, destrezza: 5 },
+ 'Keth\'ra':                     { istinto: 5, riflessi: 5, carisma: 5 },
+ 'Vandros':                 { forza: 5, resistenza: 5, fortuna: 5 },
+ 'Isole di Balsa': { velocita: 5, resistenza: 5, riflessi: 5 },
+ 'Ryuseigai':                     { forza: 5, resistenza: 5, destrezza: 5 }
 };
 
 var LUOGHI_BESTIA = {
