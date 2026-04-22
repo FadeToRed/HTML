@@ -1370,8 +1370,12 @@ function copiaHTML() {
 // IMPORTA SCHEDA (modalità modifica)
 // ============================================================
 function bbcodeToHtml(testo) {
- testo = testo.replace(/\[IMG\](.*?)\[\/IMG\]/gi, '<img src="$1">');
+ // [IMG=qualsiasi]url[/IMG] oppure [IMG]url[/IMG]
+ // Gestisce anche underscore prima della chiusura: url__[/IMG__]
+ testo = testo.replace(/\[IMG(?:=[^\]]+)?\]\s*_{0,4}(https?:\/\/[^\s_\[]+)_{0,4}\s*\[\/IMG_{0,4}\]/gi, '<img src="$1">');
+ // [URL=url]testo[/URL] → <a href="url">testo</a>
  testo = testo.replace(/\[URL=(.*?)\](.*?)\[\/URL\]/gi, '<a href="$1">$2</a>');
+ // [URL]url[/URL] → <a href="url">url</a>
  testo = testo.replace(/\[URL\](.*?)\[\/URL\]/gi, '<a href="$1">$1</a>');
  return testo;
 }
