@@ -496,10 +496,7 @@ function costruisciDatiPersonali(isNuova) {
   ) + '</div>';
 
  // Removibili
- html += voceRemovibile('vd-luogo',
-  '<div style="margin-bottom:14px;"><label style="'+STILE_LABEL+'">Luogo di nascita</label>' +
-  '<select id="campo-luogo" style="'+STILE_INPUT+' background:#292354;"></select></div>'
- );
+ html += voceRemovibile('vd-luogo', inputSelect('campo-luogo', 'Luogo di nascita', LUOGHI_TUTTI));
  html += voceRemovibile('vd-data', inputDate('campo-datanascita', 'Data di nascita'));
  html += voceRemovibile('vd-segni',
   riga2(inputSelect('campo-segno','Segno zodiacale', SEGNI_ZODIACALI), inputSelect('campo-segnocinese','Segno zodiacale cinese', SEGNI_CINESI))
