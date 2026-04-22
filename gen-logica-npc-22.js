@@ -1561,6 +1561,23 @@ function importaScheda() {
  var catMap=['armi','equip','oggetti','materiali'];var catTitoli=['Armi','Equipaggiamento','Oggetti Extra','Materiali'];
  for(var i=0;i<divs.length;i++){if(divs[i].className==='equip-box'){var titleEl=divs[i].querySelector?divs[i].querySelector('.equip-box-title'):null;if(!titleEl)continue;var titolo=titleEl.textContent.trim();var catIdx=catTitoli.indexOf(titolo);if(catIdx===-1)continue;var catId=catMap[catIdx];var items=divs[i][metodo]('li');for(var li=0;li<items.length;li++){var nameEl=items[li].querySelector?items[li].querySelector('.equip-item-name'):null;var infoEl=items[li].querySelector?items[li].querySelector('.equip-item-info'):null;if(!nameEl)continue;aggiungiItem(catId);var bIdx=document.getElementById('lista-'+catId).children.length-1;setVal(catId+'-nome-'+bIdx,nameEl.textContent.trim());if(infoEl){var infoTesto=infoEl.textContent;var qtMatch=infoTesto.match(/Qt:\s*(\S+)/);if(qtMatch)setVal(catId+'-qt-'+bIdx,qtMatch[1]);var lvMatch=infoTesto.match(/Lv\.\s*(\S+)/);if(lvMatch&&catId!=='oggetti'&&catId!=='materiali'){var lvVal=parseInt(lvMatch[1])||0;if(lvVal>5)lvVal=5;setVal(catId+'-lv-'+bIdx,lvVal);}var usiMatch=infoTesto.match(/Usi:\s*(\S+)/);if(usiMatch&&catId==='oggetti')setVal(catId+'-usi-'+bIdx,usiMatch[1]);var expAnchor=infoEl.querySelector?infoEl.querySelector('a'):null;if(expAnchor){setVal(catId+'-exp-nome-'+bIdx,expAnchor.textContent.trim());setVal(catId+'-exp-link-'+bIdx,expAnchor.getAttribute('href')||'');}}}}}
 
+ // Competenze
+ var compCards = temp['querySelectorAll'] ? temp['querySelectorAll']('.competenza-card:not(.bloccata)') : [];
+ for (var i = 0; i < compCards.length; i++) {
+  var nomeEl = compCards[i]['querySelector'] ? compCards[i]['querySelector']('.competenza-nome') : null;
+  var lvEl   = compCards[i]['querySelector'] ? compCards[i]['querySelector']('.competenza-livello') : null;
+  var descEl = compCards[i]['querySelector'] ? compCards[i]['querySelector']('.competenza-desc') : null;
+  var oggEl  = compCards[i]['querySelector'] ? compCards[i]['querySelector']('.competenza-oggetto') : null;
+  if (!nomeEl) continue;
+  setVal('comp-nome-' + i, nomeEl.textContent.trim());
+  if (lvEl) setVal('comp-lv-' + i, lvEl.textContent.trim().replace('Lv.','').trim());
+  if (descEl) setVal('comp-desc-' + i, descEl.textContent.trim());
+  if (oggEl) {
+   var oggTesto = oggEl.textContent.trim().replace('Oggetto:','').trim();
+   if (oggTesto !== '—') setVal('comp-oggetto-' + i, oggTesto);
+  }
+ }
+ 
  // Immagini
  var divLat=temp['querySelector']('.scheda-img');if(divLat){var iL=divLat['querySelector']('img');if(iL)setVal('campo-img-laterale',iL.getAttribute('src')||'');}
  var divDati=temp['querySelector']('.img-dati');if(divDati){var iD=divDati['querySelector']('img');if(iD)setVal('campo-img-dati',iD.getAttribute('src')||'');}
