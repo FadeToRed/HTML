@@ -1100,8 +1100,8 @@ function raccogliDati(isNuova) {
   var e = document.getElementById('stat-'+ls[i]);
   stat[ls[i]] = e ? (e.value.trim()||'5') : '5';
  }
- stat.vita = (function(){ var e=document.getElementById('stat-vita'); return e?(e.value.trim()||'300'):'300'; })();
- stat.aura = (function(){ var e=document.getElementById('stat-aura'); return e?(e.value.trim()||'500'):'500'; })();
+ stat.vita = (function(){ var e = document.getElementById('stat-vita'); if (!e) return '300'; var v = e.value.trim(); return (v === '' ? '300' : v); })();
+stat.aura = (function(){ var e = document.getElementById('stat-aura'); if (!e) return '500'; var v = e.value.trim(); return (v === '' ? '500' : v); })();
 
  var isBestia = (function(){ var e=document.getElementById('campo-razza'); return e && e.value==='Bestia Demoniaca'; })();
  var isAnimale = (function(){ var e=document.getElementById('campo-razza'); return e && e.value==='Animale'; })();
