@@ -1260,15 +1260,16 @@ function aggiornaCompetenze() {
  } 
 } 
  
-function bbcodeToHtml(testo) { 
- // [IMG]url[/IMG] → <img src="url"> 
- testo = testo.replace(/\[IMG\](.*?)\[\/IMG\]/gi, '<img src="$1">'); 
- // [URL=url]testo[/URL] → <a href="url">testo</a> 
- testo = testo.replace(/\[URL=(.*?)\](.*?)\[\/URL\]/gi, '<a href="$1">$2</a>'); 
- // [URL]url[/URL] → <a href="url">url</a> (forma senza testo) 
- testo = testo.replace(/\[URL\](.*?)\[\/URL\]/gi, '<a href="$1">$1</a>'); 
- return testo; 
-} 
+function bbcodeToHtml(testo) {
+ // [IMG=qualsiasi]...url...[/IMG] — gestisce attributi, underscore, spazi
+ testo = testo.replace(/\[IMG(?:=[^\]]+)?\]([\s\S]*?)\[\/IMG[^\]]*\]/gi, function(match, interno) {
+  var urlMatch = interno.match(/https?:\/\/[^\s\[\]]+/);
+  return urlMatch ? '<img src="' + urlMatch[0].replace(/_+$/, '') + '">' : match;
+ });
+ testo = testo.replace(/\[URL=(.*?)\](.*?)\[\/URL\]/gi, '<a href="$1">$2</a>');
+ testo = testo.replace(/\[URL\](.*?)\[\/URL\]/gi, '<a href="$1">$1</a>');
+ return testo;
+}
  
 function importaScheda() { 
  var htmlScheda = document.getElementById('campo-importa').value.trim(); 
