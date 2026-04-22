@@ -425,7 +425,7 @@ function costruisciHTMLSchedaNpc(d, classeContenitore, classeOriginale, styleOri
   // SLIDE STATISTICHE
   '<div class="slide-pg"><div class="slide-statistiche">' +
   '<div class="stats-grid">'+htmlStats+'</div>' +
-  '<div class="stats-vitali"><div class="stat-card-vitale"><span class="stat-label">Vita</span><span class="stat-value">'+parseInt(d.stat.vita).toLocaleString()+'</span></div><div class="stat-card-vitale"><span class="stat-label">Aura</span><span class="stat-value">'+parseInt(d.stat.aura).toLocaleString()+'</span></div></div>' +
+  '<div class="stats-vitali"><div class="stat-card-vitale"><span class="stat-label">Vita</span><span class="stat-value">'+(d.stat.vita==='???' ? '???' : parseInt(d.stat.vita).toLocaleString())+'</span></div><div class="stat-card-vitale"><span class="stat-label">Aura</span><span class="stat-value">'+(d.stat.aura==='???' ? '???' : parseInt(d.stat.aura).toLocaleString())+'</span></div></div>' +
   '<div class="stats-sep">&#9670; &#9670; &#9670;</div>' +
   '<div class="competenze-grid">'+htmlComp+'</div>' +
   '</div></div>' +
