@@ -1121,7 +1121,7 @@ stat.aura = (function(){ var e = document.getElementById('stat-aura'); if (!e) r
  var isBestia = (function(){ var e=document.getElementById('campo-razza'); return e && e.value==='Bestia Demoniaca'; })();
  var isAnimale = (function(){ var e=document.getElementById('campo-razza'); return e && e.value==='Animale'; })();
  var specie = isBestia ? (val('campo-specie')||'') : (isAnimale ? (val('campo-specie-animale')||'') : '');
- var rank = isBestia && DATI_SPECIE[specie] ? DATI_SPECIE[specie].rank : '—';
+ var rank = isBestia && DATI_SPECIE[specie] ? DATI_SPECIE[specie].rank : (isAnimale ? (val('campo-rank-animale')||'—') : '—');
  var conservazione = isBestia && DATI_SPECIE[specie] ? DATI_SPECIE[specie].conservazione : '—';
  var feEl = document.getElementById('campo-fedina');
  var fedina = feEl ? feEl.value : 'Incensurato';
