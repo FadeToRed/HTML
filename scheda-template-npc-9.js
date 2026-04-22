@@ -44,7 +44,7 @@ function aggiornaHTMLSchedaNpc(d) {
 
  // Riga dati-pg
  var datiPg = qs('.dati-pg');
- if (datiPg) datiPg.innerHTML = '<span>Classe:</span> <span>'+(d.classe !== '—' ? d.classe : 'N/D')+'</span> | <span>Status:</span> <span>'+d.status+'</span> | <span>Livello:</span> <span>'+d.livello+'</span>';
+ if (datiPg) datiPg.innerHTML = '<span>Classe:</span> <span>'+(d.classe !== '—' ? d.classe : 'Nessuna')+'</span> | <span>Status:</span> <span>'+d.status+'</span> | <span>Livello:</span> <span>'+d.livello+'</span>';
 
  // Barra EXP
  var expPct = Math.round((parseInt(d.exp) / parseInt(d.exptot)) * 100) || 0;
@@ -387,7 +387,7 @@ function costruisciHTMLSchedaNpc(d, classeContenitore, classeOriginale, styleOri
   // SLIDE DATI
   '<div class="slide-pg"><div class="slide-dati">' +
   (d.livello !== null
-   ? '<div class="dati-pg"><span>Classe:</span> <span>'+(d.classe !== null && d.classe !== '—' ? d.classe : 'N/D')+'</span> | <span>Status:</span> <span>'+(d.status||'Nessuno')+'</span> | <span>Livello:</span> <span>'+d.livello+'</span></div>' +
+   ? '<div class="dati-pg"><span>Classe:</span> <span>'+(d.classe !== null && d.classe !== '—' ? d.classe : 'Nessuna')+'</span> | <span>Status:</span> <span>'+(d.status||'Nessuno')+'</span> | <span>Livello:</span> <span>'+d.livello+'</span></div>' +
      '<div class="dati-exp-row"><span class="dati-pg2">Exp</span><div class="container-barra"><div class="barra-pg barra-exp" style="width:'+expPct+'%; height:100%;"></div></div><span class="dati-pg2"><b>'+(d.exp||0)+'/'+d.exptot+'</b> For Level Up!</span></div>'
    : '') +
   '<div class="img-dati"><img src="'+d.imgDati+'"></div>' +
@@ -406,7 +406,7 @@ function costruisciHTMLSchedaNpc(d, classeContenitore, classeOriginale, styleOri
   (d.mbti !== null ? '<span class="scheda-label">MBTI:</span> <span class="scheda-entry">'+d.mbti+'</span>\n' : '') +
   (d.allineamento !== null ? '<span class="scheda-label">Allineamento:</span> <span class="scheda-entry">'+d.allineamento+'</span>\n' : '') +
   (d.mestiere !== null ? '<span class="scheda-label">Mestiere:</span> <span class="scheda-entry">'+d.mestiere+'</span>\n' : '') +
-  (d.classe !== null ? '<span class="scheda-label">Classe:</span> <span class="scheda-entry">'+(d.classe !== '—' ? d.classe : 'N/D')+'</span>\n' : '') +
+  (d.classe !== null ? '<span class="scheda-label">Classe:</span> <span class="scheda-entry">'+(d.classe !== '—' ? d.classe : 'Nessuna')+'</span>\n' : '') +
   (d.fedina !== null ? '<span class="scheda-label">Fedina Penale:</span> <span class="scheda-entry">'+d.fedina+'</span>\n' : '') +
   (d.fedina === 'Ricercato' ? '<span class="scheda-label">Classificazione Taglia:</span> <span class="scheda-entry">'+d.classTaglia+'</span>\n' + '<span class="scheda-label">Valore Taglia:</span> <span class="scheda-entry">'+d.valTaglia+' Jenny</span>\n' : '') +
   (d.jenny !== null ? '<span class="scheda-label">Soldi:</span> <span class="scheda-entry">'+d.jenny+' Jenny / '+d.hc+' HC</span>\n' : '') +
