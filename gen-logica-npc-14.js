@@ -73,6 +73,7 @@ var LUOGHI_TUTTI = (function(){
 })();
 
 var TIPI_HATSU = [
+ 'Sconosciuto',
  'Non ancora sbloccato',
  'Irrobustimento (&#24375;&#21270;)',
  'Emissione (&#25918;&#20986;)',
@@ -562,51 +563,35 @@ function costruisciInfo() {
 }
 
 function costruisciStatistiche(isNuova) {
- // NPC: sempre input liberi, nessuna restrizione
- var html = '<p style="color:#8FBEBA; font-size:0.85em; margin-bottom:15px; font-style:italic;">Nessuna restrizione — gli NPC possono avere qualsiasi valore.</p>';
- var nomiStat = ['Forza','Resistenza','Velocità','Riflessi','Destrezza','Mira','Intelligenza','Carisma','Istinto','Fortuna'];
- var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna'];
- var r1 = [], r2 = [];
- for (var i = 0; i < 5; i++) {
-  r1.push(
-   '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:8px 4px;">' +
-   '<div style="color:#8FBEBA; font-size:0.75em; margin-bottom:4px;">'+nomiStat[i]+'</div>' +
-   '<input type="number" id="stat-'+ls[i]+'" value="5" min="0" style="width:60px; background:transparent; border:none; color:#CFF09E; font-size:1.2em; font-weight:700; text-align:center; padding:2px 0;">' +
-   '<div style="display:flex; justify-content:center; gap:4px; margin-top:5px;">' +
-   '<button onclick="stepStatNpc(\''+ls[i]+'\',-5)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">&#8722;</button>' +
-   '<button onclick="stepStatNpc(\''+ls[i]+'\',5)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">+</button>' +
-   '</div></div>'
+  // NPC: sempre input liberi, nessuna restrizione
+  var html = '<p style="color:#8FBEBA; font-size:0.85em; margin-bottom:15px; font-style:italic;">Nessuna restrizione — gli NPC possono avere qualsiasi valore.</p>';
+  var nomiStat = ['Forza','Resistenza','Velocità','Riflessi','Destrezza','Mira','Intelligenza','Carisma','Istinto','Fortuna'];
+  var ls = ['forza','resistenza','velocita','riflessi','destrezza','mira','intelligenza','carisma','istinto','fortuna'];
+
+  function buildStat(nome, id, defaultVal, step) {
+    return (
+      '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:8px 4px;">' +
+      '<div style="color:#8FBEBA; font-size:0.75em; margin-bottom:4px;">' + nome + '</div>' +
+      '<input type="text" id="stat-' + id + '" value="' + defaultVal + '" ' +
+      'style="width:60px; background:transparent; border:none; color:#CFF09E; font-size:1.2em; font-weight:700; text-align:center; padding:2px 0;">' +
+      '<div style="display:flex; justify-content:center; gap:4px; margin-top:5px;">' +
+      '<button onclick="stepStatNpc(\'' + id + '\',-' + step + ')" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">&#8722;</button>' +
+      '<button onclick="stepStatNpc(\'' + id + '\',' + step + ')" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">+</button>' +
+      '<button onclick="document.getElementById(\'stat-' + id + '\').value=\'???\';" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.75em; padding:0;">?</button>' +
+      '</div></div>'
+    );
+  }
+
+  var r1 = [], r2 = [];
+  for (var i = 0; i < 5; i++)  r1.push(buildStat(nomiStat[i], ls[i], 5, 5));
+  for (var j = 5; j < 10; j++) r2.push(buildStat(nomiStat[j], ls[j], 5, 5));
+
+  html += rigaStat5(r1);
+  html += rigaStat5(r2);
+  html += riga2(
+    buildStat('Vita', 'vita', 300, 100),
+    buildStat('Aura', 'aura', 500, 100)
   );
- }
- for (var j = 5; j < 10; j++) {
-  r2.push(
-   '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:8px 4px;">' +
-   '<div style="color:#8FBEBA; font-size:0.75em; margin-bottom:4px;">'+nomiStat[j]+'</div>' +
-   '<input type="number" id="stat-'+ls[j]+'" value="5" min="0" style="width:60px; background:transparent; border:none; color:#CFF09E; font-size:1.2em; font-weight:700; text-align:center; padding:2px 0;">' +
-   '<div style="display:flex; justify-content:center; gap:4px; margin-top:5px;">' +
-   '<button onclick="stepStatNpc(\''+ls[j]+'\',-5)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">&#8722;</button>' +
-   '<button onclick="stepStatNpc(\''+ls[j]+'\',5)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">+</button>' +
-   '</div></div>'
-  );
- }
- html += rigaStat5(r1);
- html += rigaStat5(r2);
- html += riga2(
-  '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:8px;">' +
-  '<div style="color:#8FBEBA; font-size:0.75em; margin-bottom:4px;">Vita</div>' +
-  '<input type="number" id="stat-vita" value="300" min="0" style="width:70px; background:transparent; border:none; color:#CFF09E; font-size:1.2em; font-weight:700; text-align:center; padding:2px 0;">' +
-  '<div style="display:flex; justify-content:center; gap:4px; margin-top:5px;">' +
-  '<button onclick="stepStatNpc(\'vita\',-100)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">&#8722;</button>' +
-  '<button onclick="stepStatNpc(\'vita\',100)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">+</button>' +
-  '</div></div>',
-  '<div style="text-align:center; background:#292354; border:1px solid #3B8686; border-radius:8px; padding:8px;">' +
-  '<div style="color:#8FBEBA; font-size:0.75em; margin-bottom:4px;">Aura</div>' +
-  '<input type="number" id="stat-aura" value="500" min="0" style="width:70px; background:transparent; border:none; color:#CFF09E; font-size:1.2em; font-weight:700; text-align:center; padding:2px 0;">' +
-  '<div style="display:flex; justify-content:center; gap:4px; margin-top:5px;">' +
-  '<button onclick="stepStatNpc(\'aura\',-100)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">&#8722;</button>' +
-  '<button onclick="stepStatNpc(\'aura\',100)" style="background:#0B486B; color:#CFF09E; border:1px solid #3B8686; border-radius:4px; width:24px; height:24px; cursor:pointer; font-size:0.9em; padding:0;">+</button>' +
-  '</div></div>'
- );
  // Competenze: sempre tutte sbloccate, nessuna restrizione di livello
  html += '<div style="margin-top:22px; border-top:1px solid #3B8686; padding-top:18px;">';
  html += '<h4 style="color:#CFF09E; font-family:\'Montserrat\'; margin-bottom:14px;"><i class="fa-solid fa-puzzle-piece"></i> Competenze</h4>';
@@ -1076,12 +1061,13 @@ function aggiornaTaglia() {
 // STEP STAT NPC (nessun limite)
 // ============================================================
 function stepStatNpc(sId, delta) {
- var el = document.getElementById('stat-' + sId);
- if (!el) return;
- var cur = parseInt(el.value) || 0;
- var nv = cur + delta;
- if (nv < 0) nv = 0;
- el.value = nv;
+  var el = document.getElementById('stat-' + sId);
+  if (!el) return;
+  if (el.value.trim() === '???') return;  // ← unica aggiunta
+  var cur = parseInt(el.value) || 0;
+  var nv = cur + delta;
+  if (nv < 0) nv = 0;
+  el.value = nv;
 }
 
 function stepLv(id, delta) {
