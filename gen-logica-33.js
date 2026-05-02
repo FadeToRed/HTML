@@ -19,7 +19,7 @@ var STAT_BASE = {
  
 var BONUS_LUOGO = { 
   'Narevka':            { destrezza: 5, intelligenza: 5, riflessi: 5 },
- 'Solmara':     { forza: 5, intelligenza: 5, intelligenza: 5 },
+ 'Solmara':     { forza: 5, intelligenza: 5, carisma: 5 },
  'Yorbian':                 { mira: 5, intelligenza: 5, carisma: 5 },
  'Azia': { intelligenza: 5, istinto: 5, destrezza: 5 },
  'Keth\'ra':                     { istinto: 5, riflessi: 5, carisma: 5 },
